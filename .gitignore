@@ -1,0 +1,19 @@
+cat << 'EOF' > .gitignore
+# Node / Next.js
+node_modules/
+.next/
+out/
+.env*.local
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# OS Files
+.DS_Store
+Thumbs.db
+EOF
