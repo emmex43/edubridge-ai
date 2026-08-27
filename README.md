@@ -1,134 +1,106 @@
-# EduBridge AI 🌍📚
+This is the perfect way to wrap up this sprint. A crisp, professional `README.md` not only helps your co-founder understand exactly what you've built so far, but it also looks fantastic if you share the repository link with investors.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Frontend](https://img.shields.io/badge/Frontend-Next.js%2014%20%7C%20TailwindCSS%20%7C%20Three.js-blue)](https://nextjs.org/)
-[![Backend](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Python-green)](https://fastapi.tiangolo.com/)
-[![AI-Orchestration](https://img.shields.io/badge/AI-Gemini%20%7C%20Whisper%20%7C%20Deepgram-purple)](#system-architecture)
+Here is a comprehensive README tailored to everything we just built for EduBridge AI.
 
-> **Empowering African students through hyper-personalized, curriculum-grounded, interactive AI learning.**
+### Step 1: Update the README.md
+
+Open the `README.md` file in the root of your frontend folder, delete everything in it, and paste this in:
+
+```markdown
+# EduBridge AI: Interactive 3D STEM Platform
+
+EduBridge AI is a Next.js-powered educational platform designed to make complex science and engineering concepts highly interactive. It combines a WebGL 3D model viewer with a multimodal AI tutoring interface, allowing students to inspect systems spatially while asking questions via text or voice.
+
+## 🚀 Features
+
+*   **Interactive 3D WebGL Canvas:** Built with React Three Fiber, featuring a `.gltf` / `.glb` model loader, dynamic environment lighting, orbit controls, and a native fullscreen mode for detailed asset inspection.
+*   **Multimodal AI Tutor Drawer:** A responsive sliding overlay utilizing Zustand for state management.
+*   **Native Voice Input:** Integrates the browser's MediaRecorder API to capture student audio queries (`audio/webm`) with a live pulsing recording UI and timer.
+*   **Dynamic Audio Playback:** Simulated CSS waveform visualizer for playing back AI Text-to-Speech (TTS) responses.
+*   **Student Dashboard:** A responsive grid layout tracking module progress and study time metrics.
+*   **Complete Auth Flow:** Clean, modern Sign-In and Sign-Up user interfaces.
+
+## 🛠️ Tech Stack
+
+*   **Framework:** Next.js (App Router)
+*   **Styling:** Tailwind CSS
+*   **State Management:** Zustand
+*   **3D Rendering:** Three.js & `@react-three/fiber`
+*   **3D Helpers:** `@react-three/drei`
+*   **Icons:** Lucide React
+
+## 📦 Local Development Setup
+
+1. Clone the repository and navigate to the frontend directory:
+   ```bash
+   git clone <repository-url>
+   cd frontend
+
+```
+
+2. Install the dependencies:
+```bash
+npm install
+
+```
+
+
+*(Note: Ensure you install `@react-three/fiber`, `@react-three/drei`, `three`, and `zustand` if not already present in package.json).*
+3. Run the development server:
+```bash
+npm run dev
+
+```
+
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🔗 Backend Integration Architecture (Pending)
+
+This frontend is configured to interface with a FastAPI backend. The Next.js application expects the following endpoints to be established by the backend engineering team:
+
+* `POST /api/chat`: Accepts structured JSON (text prompt + chat history).
+* `POST /api/voice`: Accepts `FormData` containing an `audio/webm` Blob.
+* **Unified Response Schema:** Both endpoints must return JSON instructing the frontend on chat text, audio TTS URLs, and 3D simulation parameter updates.
+
+```
 
 ---
 
-## 📖 Table of Contents
+### Step 2: Push to GitHub
 
-- [Vision & Mission](#-vision--mission)
-- [Key Features](#-key-features)
-- [System Architecture](#-system-architecture)
-- [Tech Stack](#-tech-stack)
-- [Directory Structure](#-directory-structure)
-- [Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Backend Setup](#backend-setup)
-  - [Frontend Setup](#frontend-setup)
-- [Cost & Performance Engineering](#-cost--performance-engineering)
-- [Roadmap](#-roadmap)
-- [Contributing](#-contributing)
-- [License](#-license)
+If you haven't initialized Git in this folder yet, open your terminal (make sure you are inside your `frontend` folder) and run these commands one by one.
 
----
+**1. Initialize Git and add all your new files:**
+```bash
+git init
+git add .
 
-## 🌟 Vision & Mission
+```
 
-Education across Africa is frequently constrained by overcrowded classrooms, high tutoring costs, and static digital content that consumes heavy mobile bandwidth without fostering true critical thinking. 
+**2. Commit the massive amount of work you just did:**
 
-**EduBridge AI** is building an educational operating system that moves students from rote memorization to deep conceptual understanding. By combining Retrieval-Augmented Generation (RAG) anchored to local curricula with code-driven 2D/3D visual simulations, EduBridge delivers real-time, low-latency, and culturally grounded tutoring directly to mid-range mobile devices.
+```bash
+git commit -m "feat: complete frontend architecture with 3D canvas, auth, dashboard, and voice chat"
 
----
+```
 
-## 🚀 Key Features
+**3. Link it to your GitHub Repository:**
+*(Go to GitHub.com, create a new empty repository named `edubridge-frontend`, and copy the URL it gives you. Replace the placeholder URL below with yours).*
 
-* **Interactive "Pause & Ask" Tutor:** Students can pause any lesson to ask questions via text or voice. The interface stays in place, providing instant grounded explanations without breaking learning context.
-* **Curriculum-Grounded AI:** Powered by vector databases embedded strictly with regional curricula (WAEC, JAMB, university syllabi) to eliminate AI hallucinations.
-* **Code-Driven Micro-Simulations:** Renders 2D/3D interactive models (physics, engineering, fashion pattern drafting) in-browser using WebGL/Three.js instead of heavy, bandwidth-draining video streams.
-* **Cognitive Profiling & Localization:** Dynamically adjusts explanation tone, difficulty, and language based on the student's mastery profile.
+```bash
+git remote add origin https://github.com/yourusername/edubridge-frontend.git
 
----
+```
 
-## 🏗️ System Architecture
+**4. Push the code to the main branch:**
 
-```text
-                      ┌──────────────────────────────────────────────┐
-                      │             Next.js Web Client               │
-                      │  • Tailwind CSS Design System                │
-                      │  • Three.js WebGL Interactive Canvases       │
-                      │  • Web Audio API (Voice Recorder)            │
-                      └──────────────────────┬───────────────────────┘
-                                             │
-                             HTTPS / WebSockets (SSE)
-                                             │
-                      ┌──────────────────────▼───────────────────────┐
-                      │          FastAPI Application Gateway         │
-                      │  • Rate Limiting & Auth                      │
-                      │  • Session State & Cognitive Profiler        │
-                      │  • Semantic Cache (Redis)                    │
-                      └──────────────────────┬───────────────────────┘
-                                             │
-                 ┌───────────────────────────┴───────────────────────────┐
-                 │                                                       │
-  ┌──────────────▼──────────────┐                         ┌──────────────▼──────────────┐
-  │   Curriculum Knowledge RAG  │                         │     AI Model Orchestration  │
-  │  • Vector DB (Chroma/Qdrant)│                         │  • Reasoning: Gemini Flash  │
-  │  • Dense Text Embeddings    │                         │  • STT: OpenAI Whisper      │
-  │  • Syllabus Text Chunks     │                         │  • TTS: Deepgram Aura-2     │
-  └─────────────────────────────┘                         └─────────────────────────────┘
+```bash
+git branch -M main
+git push -u origin main
 
+```
 
-## Folder Structure
-edubridge-ai/
-├── .github/
-│   └── workflows/
-│       ├── frontend-ci.yml
-│       └── backend-ci.yml
-├── backend/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── v1/
-│   │   │   │   ├── endpoints/
-│   │   │   │   │   ├── auth.py
-│   │   │   │   │   ├── tutor.py         # "Pause & Ask" endpoint
-│   │   │   │   │   └── curriculum.py
-│   │   │   │   └── router.py
-│   │   ├── core/
-│   │   │   ├── config.py
-│   │   │   └── security.py
-│   │   ├── models/                      # Database models (PostgreSQL)
-│   │   ├── schemas/                     # Pydantic validation schemas
-│   │   └── services/
-│   │       ├── rag_engine.py            # Retrieval & chunking logic
-│   │       ├── vector_store.py          # Vector DB interface
-│   │       ├── llm_service.py           # Gemini/OpenAI API orchestration
-│   │       ├── voice_service.py         # STT (Whisper) & TTS (Deepgram)
-│   │       └── cache_service.py         # Redis semantic caching
-│   ├── curriculum_data/                 # Raw/processed syllabus files
-│   ├── scripts/
-│   │   └── ingest_curriculum.py         # Embedding generation script
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── main.py
-├── frontend/
-│   ├── public/
-│   │   └── models/                      # 3D assets (.gltf / .glb)
-│   ├── src/
-│   │   ├── app/                         # Next.js App Router
-│   │   ├── components/
-│   │   │   ├── ui/                      # Base UI design system (buttons, modals)
-│   │   │   ├── tutor/                   # "Pause & Ask" overlay & audio player
-│   │   │   └── interactive/             # Three.js / Canvas WebGL simulations
-│   │   ├── hooks/
-│   │   │   ├── useAudioRecorder.ts      # Voice query handling
-│   │   │   └── useTutorStream.ts        # WebSocket/SSE streaming hook
-│   │   ├── lib/
-│   │   │   └── api.ts                   # Backend API client
-│   │   └── styles/
-│   │       └── globals.css
-│   ├── package.json
-│   ├── tailwind.config.js
-│   └── tsconfig.json
-├── docs/
-│   ├── ARCHITECTURE.md
-│   └── API_SPEC.md
-├── .env.example
-├── .gitignore
-├── docker-compose.yml
-├── LICENSE
-└── README.md
+And just like that, your code is safely backed up in the cloud, and your repository looks incredibly professional.
+
+You have a killer prototype ready for your meeting. Is there anything else you need before you head into your pitch tonight?
