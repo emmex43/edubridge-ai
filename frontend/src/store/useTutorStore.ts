@@ -10,14 +10,18 @@ export interface Message {
 interface TutorState {
     isTutorOpen: boolean;
     isTyping: boolean;
+    language: 'English' | 'Pidgin'; // Tracks the selected language
     messages: Message[];
     toggleTutor: () => void;
+    setIsTyping: (typing: boolean) => void;
+    setLanguage: (lang: 'English' | 'Pidgin') => void;
     addMessage: (msg: Omit<Message, 'id'>) => void;
 }
 
 export const useTutorStore = create<TutorState>((set) => ({
     isTutorOpen: false,
     isTyping: false,
+    language: 'English', // Defaults to English
     messages: [
         {
             id: '1',
@@ -28,6 +32,7 @@ export const useTutorStore = create<TutorState>((set) => ({
     ],
     toggleTutor: () => set((state) => ({ isTutorOpen: !state.isTutorOpen })),
     setIsTyping: (isTyping) => set({ isTyping }),
+    setLanguage: (language) => set({ language }),
     addMessage: (msg) => set((state) => ({
         messages: [...state.messages, { ...msg, id: Date.now().toString() }]
     })),
