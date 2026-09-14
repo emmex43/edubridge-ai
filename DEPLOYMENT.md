@@ -1,8 +1,8 @@
 # Deploying EduBridge AI
 
-Deployment guide for the **EduBridge AI backend**, written for whoever is putting
-the app online. The frontend is already on Vercel; this covers the backend, the
-database, and the two settings that connect them.
+Deployment guide for **EduBridge AI**: the backend, the database, and the two
+settings that connect them to the frontend. It is one document serving two
+people — see **Who does what** below for which half is yours.
 
 **This file contains no secrets and never should.** Every credential below is a
 placeholder in angle brackets. Real values go into the Render/Vercel dashboards,
@@ -16,6 +16,34 @@ There are two places to change, and they have to agree with each other:
 | Vercel (frontend) | `NEXT_PUBLIC_API_URL` | the backend's URL |
 
 Get one of those wrong and the app loads but every request fails.
+
+---
+
+## Who does what
+
+This is two jobs done by two people, meeting in the middle.
+
+| Half | Owner | Parts | Hands over |
+|---|---|---|---|
+| **Backend** — database, API, hosting | the backend owner | 1, 2, 3, and Part 6 steps 1–3 | the Render URL |
+| **Frontend** — pointing the app at it | the frontend owner | 4, and Part 6 step 4 | nothing; it is the last step |
+
+The only thing that crosses between them is the **Render URL**, which is a public
+address and not a secret. No key, password or connection string is ever sent to
+the frontend owner: the frontend never talks to the database or the AI provider,
+only to the backend.
+
+**Order.** It does not have to be a loop:
+
+1. Deploy the backend (Parts 1–3) and note its URL.
+2. Send that URL to the frontend owner, who sets `NEXT_PUBLIC_API_URL` and then
+   **redeploys** — see the warning under Part 4, this is the step that gets
+   missed.
+3. Set `ALLOWED_ORIGINS` to the frontend's URL and let the service restart.
+
+If the frontend is already deployed on Vercel then its URL is already known, so
+step 3 can be folded into step 1 when the service is created. Doing it that way
+skips a restart and means the frontend's very first request succeeds.
 
 ---
 
@@ -156,10 +184,11 @@ voice replies keep working but arrive with `tts_audio_url: null` and no audio.
 
 ---
 
-## Part 4 — Connect the frontend
+## Part 4 — Connect the frontend (frontend owner)
 
 The frontend already deploys to Vercel. It needs to be told where the backend
-now lives.
+now lives. Everything here happens on the Vercel side and needs only the Render
+URL from the backend owner.
 
 1. In Vercel → your project → **Settings** → **Environment Variables**, add:
 
@@ -253,6 +282,9 @@ Step 4 is the one that catches the most common mistake. If the header is missing
 
 Finally, open the deployed frontend, sign in, and send the tutor a question. If
 the dashboard shows courses and the tutor answers, the integration is complete.
+
+Steps 1–3 are the backend owner's; step 4 is the one to re-run after the frontend
+is pointed at the API, because that is when both halves are finally talking.
 
 ---
 
