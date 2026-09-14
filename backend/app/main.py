@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import auth, chat, modules, student
-from app.core.config import REPO_ROOT
+from app.core.config import REPO_ROOT, settings
 from app.db.database import Base, engine
 from app.models import progress, user  # noqa: F401 — registers tables with SQLAlchemy
 
@@ -11,13 +11,11 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="EduBridge AI Backend")
 
-# Browsers treat localhost and 127.0.0.1 as distinct origins, so allowing only
-# one makes the other fail CORS with a confusing console error.
-ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
-
+# Settings.ALLOWED_ORIGINS carries the explanation for why this is configured
+# rather than hardcoded; it defaults to the two localhost dev origins.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

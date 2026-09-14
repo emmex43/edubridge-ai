@@ -47,6 +47,25 @@ class Settings:
 
     JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "dev-secret-change-this")
     DATABASE_URL: str | None = os.getenv("DATABASE_URL")
+
+    # Browser origins allowed to call this API, comma-separated. A deployed
+    # frontend lives on a different origin from a deployed API (Vercel vs
+    # Render), and browsers block cross-origin calls by default -- so this has
+    # to be settable per environment. It used to be hardcoded to localhost,
+    # which blocked every deployed frontend with a browser console error and
+    # nothing at all in the server log to explain it.
+    #
+    # List the origins explicitly rather than using "*": the middleware sets
+    # allow_credentials=True, and browsers reject a wildcard combined with
+    # credentials, so "*" would fail everywhere instead of only where intended.
+    ALLOWED_ORIGINS: list[str] = [
+        origin.strip()
+        for origin in os.getenv(
+            "ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
+        ).split(",")
+        if origin.strip()
+    ]
+
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 

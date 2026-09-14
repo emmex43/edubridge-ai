@@ -265,8 +265,7 @@ Receives native browser audio blobs, transcribes the speech (STT), processes the
   origin as the endpoints — prefix it with the configured base URL before handing
   it to an audio element. It is `null` when synthesis failed; fall back to showing
   `response_text` rather than treating the exchange as broken.
-* The container is `.wav` because the configured TTS model emits wav only. The
-  extension always matches the real bytes.
+* The extension always matches the real bytes.
 * The server deletes rendered clips after six hours, so a `tts_audio_url` is not
   permanent — play it during the lesson rather than saving it for later.
 
@@ -395,11 +394,8 @@ client shows an offline banner rather than failing.
 cd backend
 cp .env.example .env
 ```
-`OPENAI_API_KEY` is the only value that must be filled in. The same file switches
-provider: `OPENAI_BASE_URL` points the OpenAI SDK at any OpenAI-compatible
-gateway, and `CHAT_MODEL` / `STT_MODEL` / `TTS_MODEL` name that provider's
-models — so changing provider is a `.env` edit, not a code change. `.env` is
-gitignored and must never be committed.
+Fill in the API key and the database URL; `backend/.env.example` documents every
+setting next to its default. `.env` is gitignored and must never be committed.
 
 2. Start it — the tables are created on first boot:
 ```powershell
@@ -419,8 +415,7 @@ gitignored and must never be committed.
 
 The default suite is **offline**: the model provider is stubbed, so it needs no
 key and spends nothing. The tests that really call the provider are marked `live`
-and are deselected by default; they need a valid key, cost credits, and the voice
-ones consume the provider's daily speech quota.
+and are deselected by default; they need a valid key and cost credits.
 
 ### Frontend API URL
 
