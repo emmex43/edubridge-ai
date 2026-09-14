@@ -1,4 +1,3 @@
-```markdown
 # EduBridge AI: Interactive 3D STEM Learning Platform
 
 EduBridge AI is a multimodal, Next.js-powered educational platform designed to make complex science and engineering concepts highly interactive. It bridges the gap in technical skills education by combining immersive 3D WebGL modeling with an adaptive AI tutoring interface.
@@ -67,8 +66,10 @@ backend/
 │   ├── main.py                  # FastAPI application instance and CORS setup
 │   ├── api/
 │   │   └── routes/              # API endpoints
+│   │       ├── auth.py          # Routes for /api/v1/auth/register, /login and /me
 │   │       ├── chat.py          # Routes for /api/v1/chat/text and /api/v1/chat/voice
-│   │       └── student.py       # Routes for progress tracking and module history
+│   │       ├── modules.py       # Route for the /api/v1/modules course catalogue
+│   │       └── student.py       # Routes for progress tracking (read and write)
 │   ├── core/
 │   │   ├── config.py            # Environment variables (API keys, DB credentials)
 │   │   └── security.py          # Authentication and token validation
@@ -82,6 +83,7 @@ backend/
 │       └── database.py          # Database connection pooling (e.g., PostgreSQL/MongoDB)
 ├── requirements.txt             # Python dependencies (fastapi, uvicorn, langchain, etc.)
 └── .env                         # Environment variables (Not tracked in Git)
+```
 
 ---
 
@@ -91,11 +93,61 @@ The Next.js frontend operates on a decoupled client-server architecture. It expe
 
 The backend engineering team must expose the following RESTful endpoints:
 
+> **Authentication.** Every endpoint below requires a Bearer token in the
+> `Authorization` header, obtained from the accounts endpoints. A request with no
+> token, an expired one, or a malformed one receives `401`.
+>
+> The `student_id` field is accepted on chat and progress for wire compatibility
+> with older clients, but it is **ignored**: the server identifies the student
+> from the token, never from the payload. Sending it is harmless; omitting it is
+> also fine.
+>
+> Errors are returned as `{"detail": "..."}`. A `502` means the AI provider was
+> unreachable — the client should offer a retry rather than treat it as a bug.
+
+### 0. Accounts
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/v1/auth/register` | Create an account; returns a token |
+| `POST /api/v1/auth/login` | Exchange credentials for a token |
+| `GET /api/v1/auth/me` | Resolve the token's owner (used after a page refresh) |
+
+**Register — request:**
+```json
+{
+  "email": "student@uniben.edu",
+  "password": "pass1234",
+  "name": "Ada Okafor"
+}
+```
+
+`name` is optional. A duplicate email returns `400` `"Email already registered"`.
+
+**Token response** — register and login both return this shape:
+
+```json
+{
+  "access_token": "eyJhbGciOi...",
+  "token_type": "bearer",
+  "user": { "id": 5, "email": "student@uniben.edu", "name": "Ada Okafor" }
+}
+```
+
+Wrong credentials return `401` `"Invalid email or password"`.
+
+`GET /api/v1/auth/me` returns the `user` object on its own. Login already returns
+the student, but a page refresh discards that response — this is how the client
+re-learns who it is holding a token for.
+
+---
+
 ### 1. Text Chat Endpoint
 
 Processes standard text queries and returns a Socratic response tailored to the selected language.
 
 * **Endpoint:** `POST /api/v1/chat/text`
+* **Headers:** `Authorization: Bearer <access_token>`
 * **Request Payload (JSON):**
 ```json
 {
@@ -111,28 +163,52 @@ Processes standard text queries and returns a Socratic response tailored to the 
 
 ```
 
+* `module_id` is optional. With a module, the answer is grounded in that
+  module's course material; without one the tutor still answers, just without
+  retrieval. The same applies to `/chat/voice`.
+* `language` must be exactly `"English"` or `"Pidgin"`; any other value is a `422`.
+* `chat_history` roles are `"ai"` and `"user"`. The server maps `"ai"` to the
+  model's `assistant` role — send `"ai"`, not `"assistant"`.
+* Expect roughly 1–4 seconds of latency; clients should show a loading state.
 
 * **Response Payload (JSON):**
 ```json
 {
   "status": "success",
   "response_text": "I don hear your question. Make we check the equation...",
-  "latex_content": true
+  "latex_content": true,
+  "trigger_3d_animation": "highlight_reactor_core"
 }
-
 ```
 
+* `latex_content` is a hint for the client: when `true`, render `response_text`
+  with the KaTeX pipeline. Answers use `\( ... \)` and `\[ ... \]` delimiters.
+  A bare `$` is not treated as math, since engineering answers mention prices.
+* `trigger_3d_animation` is the name of a highlight to play, or `null`. It is
+  frequently `null` — treat that as "nothing to highlight", not as an error, and
+  never gate the answer on it. The tag is stripped from `response_text` before
+  it is returned. The recognised values are:
 
+  `highlight_reactor_core`, `highlight_vessel_wall`, `highlight_inlet_stream`,
+  `highlight_outlet_stream`, `highlight_pressure_gauge`,
+  `highlight_temperature_probe`, `highlight_waveform`,
+  `highlight_frequency_spectrum`
+
+  Any value outside that list is dropped server-side and returned as `null`.
+
+---
 
 ### 2. Voice Processing Endpoint
 
 Receives native browser audio blobs, transcribes the speech (STT), processes the query, and returns both text and a Text-to-Speech (TTS) audio URL.
 
 * **Endpoint:** `POST /api/v1/chat/voice`
+* **Headers:** `Authorization: Bearer <access_token>`
 * **Request Payload (`multipart/form-data`):**
 * `audio_file`: The `audio/webm` Blob captured by the frontend MediaRecorder.
 * `language`: String ("English" | "Pidgin")
-* `student_id`: String
+* `student_id`: String (optional; ignored — see the note above)
+* `module_id`: String (optional; RAG grounding is skipped when absent)
 
 
 * **Response Payload (JSON):**
@@ -141,19 +217,28 @@ Receives native browser audio blobs, transcribes the speech (STT), processes the
   "status": "success",
   "transcription": "What is the pressure in the batch reactor?",
   "response_text": "The pressure increases proportionally with temperature...",
-  "tts_audio_url": "[https://storage.googleapis.com/edubridge/audio/response_892.mp3](https://storage.googleapis.com/edubridge/audio/response_892.mp3)",
+  "tts_audio_url": "/static/audio/response_892.wav",
   "trigger_3d_animation": "highlight_reactor_core"
 }
-
 ```
 
+* `tts_audio_url` is a **relative path on the API host**, served from the same
+  origin as the endpoints — prefix it with the configured base URL before handing
+  it to an audio element. It is `null` when synthesis failed; fall back to showing
+  `response_text` rather than treating the exchange as broken.
+* The container is `.wav` because the configured TTS model emits wav only. The
+  extension always matches the real bytes.
+* Rendered clips are pruned after six hours, so a URL is not permanent — fetch it
+  during the session rather than storing it.
 
+---
 
 ### 3. Progress Tracking Endpoint
 
 Updates the student's dashboard metrics when they interact with a module.
 
 * **Endpoint:** `PUT /api/v1/student/progress`
+* **Headers:** `Authorization: Bearer <access_token>`
 * **Request Payload (JSON):**
 ```json
 {
@@ -164,6 +249,69 @@ Updates the student's dashboard metrics when they interact with a module.
 }
 
 ```
+
+This upserts: one row per student per module. The response echoes the stored
+values alongside `status`.
+
+**Reading progress back:**
+
+* **Endpoint:** `GET /api/v1/student/progress`
+* **Headers:** `Authorization: Bearer <access_token>`
+* **Query:** `module_id` (optional) — narrows the result to one module.
+
+```json
+{
+  "status": "success",
+  "progress": [
+    { "module_id": "module_2_thermo",  "time_spent_seconds": 600,
+      "completion_percentage": 40.0, "updated_at": "2026-09-14T12:55:03" },
+    { "module_id": "module_4_spatial", "time_spent_seconds": 1240,
+      "completion_percentage": 85.0, "updated_at": "2026-09-14T13:01:44" }
+  ]
+}
+```
+
+Sum `time_spent_seconds` for total study time and average
+`completion_percentage` for overall progress. A new account returns an empty
+list.
+
+---
+
+### 4. Course Catalogue Endpoint
+
+The dashboard's course grid hardcoded both the module ids and their titles, so
+the ids it sent to chat and progress were maintained by hand against the course
+material. An id with no material behind it makes the tutor answer "no course
+material found" with no visible error, so the list is served from the same place
+the material lives.
+
+* **Endpoint:** `GET /api/v1/modules`
+* **Headers:** `Authorization: Bearer <access_token>`
+
+```json
+{
+  "status": "success",
+  "modules": [
+    { "id": "module_2_thermo", "number": 2, "title": "Batch Pyrolysis Reactors",
+      "course": "Applied Thermodynamics",
+      "label": "Module 2: Batch Pyrolysis Reactors" },
+    { "id": "module_4_spatial", "number": 4, "title": "Spatial Model Viewer",
+      "course": "Process Systems Engineering",
+      "label": "Module 4: Spatial Model Viewer" },
+    { "id": "module_6_fourier", "number": 6, "title": "Fourier Series Expansions",
+      "course": "Numerical Methods & Algorithms",
+      "label": "Module 6: Fourier Series Expansions" }
+  ]
+}
+```
+
+* `id` is what the client sends as `module_id` on `/chat/text`, `/chat/voice`
+  and `/student/progress`.
+* `course` is the card heading; `label` is the chip, already formatted — render
+  it as-is rather than rebuilding `Module N: Title`.
+* Only modules with material are listed, so every `id` returned here is safe to
+  send. Adding material to the backend adds a card here automatically.
+* Sorted by `id`, so the grid order is stable between requests.
 
 
 
@@ -195,5 +343,49 @@ npm run dev
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+The dashboard, tutor and progress tracking need the API below; without it the
+client shows an offline banner rather than failing.
+
+---
+
+## ⚙️ Running the Backend
+
+1. Create `backend/.env` from the template:
+```bash
+cd backend
+cp .env.example .env
 ```
+`OPENAI_API_KEY` is the only value that must be filled in. The same file switches
+provider: `OPENAI_BASE_URL` points the OpenAI SDK at any OpenAI-compatible
+gateway, and `CHAT_MODEL` / `STT_MODEL` / `TTS_MODEL` name that provider's
+models — so changing provider is a `.env` edit, not a code change. `.env` is
+gitignored and must never be committed.
+
+2. Start it — the tables are created on first boot:
+```powershell
+.\start_server.ps1            # foreground, output visible
+.\start_server.ps1 -Reload    # auto-reload while developing
+```
+
+3. The API is on [http://127.0.0.1:8000](http://127.0.0.1:8000) and its
+   interactive docs are at `/docs`.
+
+### Tests
+
+```powershell
+.\run_test.bat          # offline suite -- the model is stubbed, free and fast
+.\run_test.bat live     # adds the end-to-end tests against the real provider
+```
+
+The default suite is **offline**: the model provider is stubbed, so it needs no
+key and spends nothing. The tests that really call the provider are marked `live`
+and are deselected by default; they need a valid key, cost credits, and the voice
+ones consume the provider's daily speech quota.
+
+### Frontend API URL
+
+The client reads `NEXT_PUBLIC_API_URL` from `frontend/.env` and falls back to
+`http://127.0.0.1:8000`, which is correct for local development. `NEXT_PUBLIC_*`
+values are inlined at build time, so changing one needs a dev-server restart —
+a browser refresh will not pick it up.
 

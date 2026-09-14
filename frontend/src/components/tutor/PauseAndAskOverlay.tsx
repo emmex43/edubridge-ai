@@ -1,16 +1,35 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useTutorStore } from '@/store/useTutorStore';
+import { useTutorStore, type Message } from '@/store/useTutorStore';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
+import * as api from '@/lib/api';
 import FormattedMessage from './FormattedMessage';
 import AudioPlayer from './AudioPlayer';
-import { Sparkles, X, Send, Mic, Square, Trash2, Globe } from 'lucide-react';
+import { Sparkles, X, Send, Mic, Square, Trash2, Globe, Loader2 } from 'lucide-react';
+
+/** How many prior turns to send as context. The whole transcript would grow
+ *  the request without bound; the last few carry the thread. */
+const HISTORY_LIMIT = 10;
 
 export default function PauseAndAskOverlay() {
-    const { isTutorOpen, toggleTutor, messages, addMessage, isTyping, setIsTyping, language, setLanguage } = useTutorStore();
+    const {
+        isTutorOpen,
+        toggleTutor,
+        messages,
+        addMessage,
+        isTyping,
+        setIsTyping,
+        language,
+        setLanguage,
+        moduleId,
+        setHighlight,
+        noteQuestion,
+    } = useTutorStore();
+
     const [inputText, setInputText] = useState('');
-    const { isRecording, recordingDuration, startRecording, stopRecording, cancelRecording } = useAudioRecorder();
+    const { isRecording, recordingDuration, startRecording, stopRecording, cancelRecording } =
+        useAudioRecorder();
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -20,50 +39,64 @@ export default function PauseAndAskOverlay() {
 
     if (!isTutorOpen) return null;
 
-    const handleSendMessage = (e?: React.FormEvent) => {
-        if (e) e.preventDefault();
-        if (!inputText.trim()) return;
+    /** Prior turns in the backend's shape. Failed turns are left out so a
+     *  network error doesn't get replayed to the model as conversation. */
+    const buildHistory = (): { role: 'ai' | 'user'; content: string }[] =>
+        messages
+            .filter((m) => !m.error && m.text.trim())
+            .slice(-HISTORY_LIMIT)
+            .map((m) => ({ role: m.sender, content: m.text }));
 
-        addMessage({ sender: 'user', text: inputText });
-        const userQuery = inputText;
+    const handleSendMessage = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        const question = inputText.trim();
+        if (!question || isTyping) return;
+
+        const history = buildHistory();
+        addMessage({ sender: 'user', text: question });
         setInputText('');
         setIsTyping(true);
 
-        setTimeout(() => {
+        try {
+            const res = await api.sendText(moduleId, language, question, history);
+            addMessage({ sender: 'ai', text: res.response_text });
+            // null is the common case and simply means "nothing to highlight".
+            setHighlight(res.trigger_3d_animation);
+            noteQuestion();
+        } catch (err) {
+            addMessage({ sender: 'ai', text: api.describeError(err), error: true });
+        } finally {
             setIsTyping(false);
-
-            // Dynamic response based on selected language
-            const aiResponse = language === 'Pidgin'
-                ? `I don hear your question: "${userQuery}". Make we check the equation wey dey control this dynamic state.`
-                : `I received your question: "${userQuery}". Let's analyze the governing equations for this dynamic state.`;
-
-            addMessage({
-                sender: 'ai',
-                text: aiResponse,
-            });
-        }, 1500);
+        }
     };
 
     const handleStopAndSendVoice = async () => {
         const audioBlob = await stopRecording();
         if (!audioBlob) return;
 
-        const audioUrl = URL.createObjectURL(audioBlob);
-        addMessage({ sender: 'user', text: '🎤 Voice message', audioUrl: audioUrl });
+        // The blob URL is local to this tab and plays back the student's own
+        // recording — it is not a backend asset, so it is not prefixed.
+        const localUrl = URL.createObjectURL(audioBlob);
+        addMessage({ sender: 'user', text: '🎤 Voice message', audioUrl: localUrl });
         setIsTyping(true);
 
-        setTimeout(() => {
-            setIsTyping(false);
-
-            const aiResponse = language === 'Pidgin'
-                ? 'I don analyze wetin you talk. Here na the response to your question about the 3D model state.'
-                : 'I analyzed your spoken query. Here is the response to your question regarding the 3D model state.';
-
+        try {
+            const res = await api.sendVoice(moduleId, language, audioBlob);
             addMessage({
                 sender: 'ai',
-                text: aiResponse,
+                text: res.response_text,
+                // Relative "/static/audio/x.wav"; AudioPlayer resolves it
+                // against the API host. Null when synthesis failed, in which
+                // case the text answer still stands on its own.
+                audioUrl: res.tts_audio_url ?? undefined,
             });
-        }, 2000);
+            setHighlight(res.trigger_3d_animation);
+            noteQuestion();
+        } catch (err) {
+            addMessage({ sender: 'ai', text: api.describeError(err), error: true });
+        } finally {
+            setIsTyping(false);
+        }
     };
 
     const formatTimer = (seconds: number) => {
@@ -87,7 +120,7 @@ export default function PauseAndAskOverlay() {
                         <Globe size={14} className="text-gray-500" />
                         <select
                             value={language}
-                            onChange={(e) => setLanguage(e.target.value as 'English' | 'Pidgin')}
+                            onChange={(e) => setLanguage(e.target.value as api.Language)}
                             className="bg-transparent text-xs font-medium text-gray-700 outline-none cursor-pointer"
                         >
                             <option value="English">English</option>
@@ -103,13 +136,18 @@ export default function PauseAndAskOverlay() {
 
             {/* Chat Area */}
             <div className="flex-1 space-y-4 overflow-y-auto bg-gray-50/50 p-4">
-                {messages.map((msg) => (
-                    <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${msg.sender === 'user' ? 'rounded-br-sm bg-blue-600 text-white' : 'rounded-bl-sm border border-gray-100 bg-white text-gray-800'}`}>
-                            <FormattedMessage content={msg.text} />
-                            {msg.audioUrl && <AudioPlayer audioUrl={msg.audioUrl} />}
-                        </div>
+                {messages.length === 0 && !isTyping && (
+                    <div className="rounded-2xl border border-dashed border-gray-200 bg-white/60 px-4 py-6 text-center">
+                        <p className="text-sm font-medium text-gray-700">Ask about this module</p>
+                        <p className="mt-1 text-xs text-gray-500">
+                            Type a question or use the microphone. Answers are grounded in the
+                            course material and follow your language choice.
+                        </p>
                     </div>
+                )}
+
+                {messages.map((msg) => (
+                    <MessageBubble key={msg.id} msg={msg} />
                 ))}
 
                 {isTyping && (
@@ -144,16 +182,53 @@ export default function PauseAndAskOverlay() {
                     </div>
                 ) : (
                     <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                        <button type="button" onClick={startRecording} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <button
+                            type="button"
+                            onClick={startRecording}
+                            disabled={isTyping}
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-40"
+                        >
                             <Mic size={18} />
                         </button>
-                        <input type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} placeholder="Ask a question..." className="flex-1 rounded-full border border-gray-200 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
-                        <button type="submit" disabled={!inputText.trim()} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white disabled:opacity-40 hover:bg-blue-700 transition-colors">
-                            <Send size={16} />
+                        <input
+                            type="text"
+                            value={inputText}
+                            onChange={(e) => setInputText(e.target.value)}
+                            disabled={isTyping}
+                            placeholder={isTyping ? 'Thinking…' : 'Ask a question...'}
+                            className="flex-1 rounded-full border border-gray-200 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50"
+                        />
+                        <button
+                            type="submit"
+                            disabled={!inputText.trim() || isTyping}
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white disabled:opacity-40 hover:bg-blue-700 transition-colors"
+                        >
+                            {isTyping ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                         </button>
                     </form>
                 )}
             </div>
         </aside>
+    );
+}
+
+function MessageBubble({ msg }: { msg: Message }) {
+    if (msg.error) {
+        return (
+            <div className="flex justify-start">
+                <div className="max-w-[85%] rounded-2xl rounded-bl-sm border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900 shadow-sm">
+                    {msg.text}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${msg.sender === 'user' ? 'rounded-br-sm bg-blue-600 text-white' : 'rounded-bl-sm border border-gray-100 bg-white text-gray-800'}`}>
+                <FormattedMessage content={msg.text} />
+                {msg.audioUrl && <AudioPlayer audioUrl={msg.audioUrl} />}
+            </div>
+        </div>
     );
 }

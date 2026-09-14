@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Sparkles, BrainCircuit, Box, Mic, ArrowRight } from 'lucide-react';
 
@@ -80,7 +82,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Dynamic Environment</h3>
               <p className="text-gray-500 leading-relaxed">
-                The AI doesn't just talk—it controls the simulation. Ask it to "increase the pressure" and watch the 3D model react instantly.
+                The AI doesn&apos;t just talk—it controls the simulation. Ask it to &ldquo;increase the pressure&rdquo; and watch the 3D model react instantly.
               </p>
             </div>
 

@@ -1,0 +1,32 @@
+# Local Postgres for the backend.
+#
+# Optional on this machine -- PostgreSQL 18 is already installed and running on
+# :5432 -- but this makes the setup reproducible for anyone else. Start it with:
+#
+#     docker compose up -d
+#
+# NOTE: the service publishes on host port 5433 to avoid clashing with a native
+# Postgres install. If you use it, point DATABASE_URL in backend/.env at 5433:
+#
+#     postgresql://postgres:devpassword@localhost:5433/edubridge
+
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: edubridge-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
+      POSTGRES_DB: ${POSTGRES_DB:-edubridge}
+    ports:
+      - "5433:5432"
+    volumes:
+      - edubridge_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-edubridge}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  edubridge_pgdata:
