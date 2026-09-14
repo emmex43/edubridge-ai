@@ -89,21 +89,61 @@ backend/
 
 ## 🔗 Backend API Contracts (Integration Guide)
 
-The Next.js frontend operates on a decoupled client-server architecture. It expects a backend (e.g., Python FastAPI or Django) to handle the AI logic, Retrieval-Augmented Generation (RAG), and database persistence.
+The frontend and the backend are two separate applications that talk over HTTP.
+This section is the contract between them. Everything documented here is **built
+and running** in `backend/` — it describes the API that exists, it is not a
+request for one. All paths below are relative to `/api/v1`.
 
-The backend engineering team must expose the following RESTful endpoints:
+### Before you call anything: you need a token
 
-> **Authentication.** Every endpoint below requires a Bearer token in the
-> `Authorization` header, obtained from the accounts endpoints. A request with no
-> token, an expired one, or a malformed one receives `401`.
->
-> The `student_id` field is accepted on chat and progress for wire compatibility
-> with older clients, but it is **ignored**: the server identifies the student
-> from the token, never from the payload. Sending it is harmless; omitting it is
-> also fine.
->
-> Errors are returned as `{"detail": "..."}`. A `502` means the AI provider was
-> unreachable — the client should offer a retry rather than treat it as a bug.
+`POST /auth/register` and `POST /auth/login` (see [Accounts](#0-accounts)) are the
+only two endpoints that do **not** need a token, because they are how you get one.
+Both reply with an `access_token`.
+
+Send that token on **every other request**, in this header:
+
+```
+Authorization: Bearer eyJhbGciOi...
+```
+
+If the header is missing, or the token has expired or is malformed, the server
+replies `401`. So: save the token when the student signs in, send it on every
+call, and throw it away when you get a `401`. The browser does not keep it across
+a page refresh on its own — call `GET /auth/me` when the app loads to find out
+whose token you are holding.
+
+**The one thing you never send is a student id.** Older payloads included a
+`student_id` field on chat and progress. The server still accepts it so those
+clients keep working, but it ignores the value completely and always uses the id
+from the token instead. Sending it is harmless and omitting it is fine — just
+never use it to decide whose data you are reading or writing.
+
+### Every error has a `detail` field — but it is not always a string
+
+Check the status code, not only `detail`:
+
+| Status | `detail` is | What happened | What the client should do |
+|---|---|---|---|
+| `400` | a string | The request was understood but refused — e.g. `"Email already registered"` | Show `detail` to the student |
+| `401` | a string | No token, an expired one, or wrong credentials | Send the student to sign-in |
+| `422` | **a list of objects** | The payload was the wrong shape — e.g. `language` was `"French"` | A bug in the client. Fix the request; do not show it to the student |
+| `502` | a string | The AI provider could not be reached | Offer a retry. This is not a bug. |
+
+A `422` really looks like this — note that `detail` is an **array**, so code like
+`detail.toLowerCase()` will throw on it:
+
+```json
+{
+  "detail": [
+    {
+      "type": "literal_error",
+      "loc": ["body", "language"],
+      "msg": "Input should be 'English' or 'Pidgin'",
+      "input": "French"
+    }
+  ]
+}
+```
 
 ### 0. Accounts
 
@@ -151,7 +191,6 @@ Processes standard text queries and returns a Socratic response tailored to the 
 * **Request Payload (JSON):**
 ```json
 {
-  "student_id": "user_123",
   "module_id": "module_4_spatial",
   "language": "Pidgin", 
   "message": "Explain the governing equations for this dynamic state.",
@@ -228,8 +267,8 @@ Receives native browser audio blobs, transcribes the speech (STT), processes the
   `response_text` rather than treating the exchange as broken.
 * The container is `.wav` because the configured TTS model emits wav only. The
   extension always matches the real bytes.
-* Rendered clips are pruned after six hours, so a URL is not permanent — fetch it
-  during the session rather than storing it.
+* The server deletes rendered clips after six hours, so a `tts_audio_url` is not
+  permanent — play it during the lesson rather than saving it for later.
 
 ---
 
@@ -242,7 +281,6 @@ Updates the student's dashboard metrics when they interact with a module.
 * **Request Payload (JSON):**
 ```json
 {
-  "student_id": "user_123",
   "module_id": "module_4_spatial",
   "time_spent_seconds": 1240,
   "completion_percentage": 85
@@ -250,8 +288,10 @@ Updates the student's dashboard metrics when they interact with a module.
 
 ```
 
-This upserts: one row per student per module. The response echoes the stored
-values alongside `status`.
+Saves progress for one student on one module: **one row per student per module**.
+Sending it again for the same module updates that row instead of adding a second
+one, so it is safe to call repeatedly. The response echoes back what was stored,
+alongside `status`.
 
 **Reading progress back:**
 

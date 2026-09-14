@@ -3,7 +3,9 @@
  *
  * Everything the browser needs to reach the API lives here: the base URL, the
  * token, and one request helper that attaches the Bearer header and turns the
- * backend's `{"detail": "..."}` error shape into a real Error the UI can show.
+ * backend's error body into a real Error the UI can show. That body always has
+ * a `detail` field, but FastAPI sends it as a string for 400/401/502 and as a
+ * list of objects for a 422, so both shapes are handled below.
  *
  * The token is kept in localStorage rather than a cookie because the backend
  * authenticates with an `Authorization` header, not a session cookie.
