@@ -11,6 +11,12 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="EduBridge AI Backend")
 
+
+origins = [
+    "https://edubridge-ai-navy.vercel.app", # exact Vercel URL
+    "http://localhost:3000",           # This ensures your local testing still works
+]
+
 # Settings.ALLOWED_ORIGINS carries the explanation for why this is configured
 # rather than hardcoded; it defaults to the two localhost dev origins.
 app.add_middleware(
