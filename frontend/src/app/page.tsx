@@ -10,7 +10,7 @@ export default function LandingPage() {
       <nav className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto border-b-2 border-[#1E293B]/10">
         <Link href="/" className="relative z-10 block hover:opacity-90 transition-opacity">
           <Image 
-            src="/edubridge_logo.png" 
+            src="/edubridge_logo1.png" 
             alt="EduBridge AI Logo" 
             width={300} 
             height={300} 
