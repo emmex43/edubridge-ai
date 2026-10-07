@@ -1,164 +1,139 @@
-'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, UserPlus } from 'lucide-react';
 import Image from 'next/image';
+import { Search, ArrowRight, BrainCircuit, Globe2, Lightbulb } from 'lucide-react';
 
-export default function SignUp() {
-  const router = useRouter();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      if (!res.ok) {
-        throw new Error('Could not create account. Please try again.');
-      }
-
-      const data = await res.json();
-      localStorage.setItem('token', data.access_token);
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+export default function LandingPage() {
   return (
-    <div className="flex min-h-screen bg-[#FFFDF8] text-[#1E293B] font-sans selection:bg-[#FBBF24] selection:text-[#1E293B]">
+    <div className="min-h-screen bg-[#FFFDF8] text-[#1E293B] font-sans selection:bg-[#FBBF24] selection:text-[#1E293B]">
       
-      {/* Left Column - Branding (Hidden on mobile) */}
-      <div className="hidden lg:flex w-1/2 bg-[#FB7185] border-r-4 border-[#1E293B] p-12 flex-col justify-between relative overflow-hidden">
-        
-        <Link href="/" className="relative z-10 block hover:opacity-90 transition-opacity w-fit mt-4">
+      {/* Navigation */}
+      <nav className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto border-b-2 border-[#1E293B]/10">
+        <Link href="/" className="relative z-10 block hover:opacity-90 transition-opacity">
           <Image 
-            src="/edubridge_logo1.png" 
+            src="/edubridge_logo.png" 
             alt="EduBridge AI Logo" 
-            width={400} 
-            height={400} 
-            className="h-16 w-auto object-contain object-left scale-[2] origin-left mix-blend-multiply" 
+            width={300} 
+            height={300} 
+            className="h-12 w-auto object-contain object-left scale-[2] sm:scale-[2.5] origin-left mix-blend-multiply" 
             priority
           />
         </Link>
-        
-        <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1E293B] text-white font-black text-xs uppercase tracking-wider mb-6 shadow-[2px_2px_0px_white]">
-            <UserPlus size={14} /> Join the Beta
-          </div>
-          <h1 className="text-5xl font-black leading-[1.1] mb-6 text-white drop-shadow-md">
-            Start your interactive <br/>
-            <span className="bg-[#FBBF24] text-[#1E293B] px-2 py-1 rounded-lg border-2 border-[#1E293B] shadow-[3px_3px_0px_#1E293B] inline-block mt-2">learning</span> journey today.
-          </h1>
-          <p className="text-white font-bold text-lg max-w-md mt-4 drop-shadow-sm">
-            Create an account to track your progress, save your chat history, and unlock all STEM & history modules.
-          </p>
+        <div className="hidden md:flex items-center gap-8 font-bold text-sm">
+          <Link className="hover:text-[#14B8A6] transition-colors" href="#">Courses</Link>
+          <Link className="hover:text-[#14B8A6] transition-colors" href="#">Tutors</Link>
+          <Link className="text-slate-500 hover:text-[#1E293B] transition-colors" href="/sign-in">Sign In</Link>
+          <Link className="px-6 py-2.5 bg-[#14B8A6] text-white rounded-full border-2 border-[#1E293B] shadow-[3px_3px_0px_#1E293B] hover:bg-[#0D9488] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all" href="/dashboard">
+            Start Learning
+          </Link>
         </div>
-        
-        <div className="text-sm font-bold text-[#1E293B] relative z-10">
-          © 2026 EduBridge AI. All rights reserved.
-        </div>
-        <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-white rounded-full border-4 border-[#1E293B] opacity-10 pointer-events-none"></div>
-      </div>
+      </nav>
 
-      {/* Right Column - Form */}
-      <div className="flex w-full lg:w-1/2 flex-col justify-center px-6 py-12 md:px-12 lg:px-24">
-        <div className="mx-auto w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl border-4 border-[#1E293B] shadow-[6px_6px_0px_#1E293B]">
+      {/* Hero Section */}
+      <main className="max-w-5xl mx-auto px-6 pt-20 pb-20 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FBBF24] border-2 border-[#1E293B] text-[#1E293B] font-black text-xs uppercase tracking-wider mb-8 shadow-[2px_2px_0px_#1E293B]">
+          <span className="animate-pulse">●</span> For JSS & SSS Students
+        </div>
+        
+        <h1 className="text-5xl md:text-7xl font-black text-[#1E293B] tracking-tight mb-8 leading-[1.1]">
+          Master Math, Science & <br className="hidden md:block" />
+          <span className="relative inline-block">
+            <span className="relative z-10">AI Skills</span>
+            <span className="absolute bottom-1 left-0 w-full h-4 md:h-6 bg-[#FBBF24] -z-10 rounded-sm"></span>
+          </span> for the Future.
+        </h1>
+        
+        <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
+          From Nigerian History to Prompt Engineering, learn through interactive stories and a conversational AI tutor that adapts to your grade.
+        </p>
+
+        {/* Discovery Search Bar */}
+        <div className="max-w-2xl mx-auto mb-10 relative">
+          <div className="flex items-center bg-white border-4 border-[#1E293B] rounded-full p-2 shadow-[6px_6px_0px_#14B8A6]">
+            <div className="pl-4 pr-2 text-slate-400">
+              <Search size={24} />
+            </div>
+            <input 
+              type="text" 
+              placeholder="What do you want to learn today? (e.g. Plate Tectonics, JSS2 Math)"
+              className="flex-1 bg-transparent py-3 px-2 outline-none text-[#1E293B] font-bold placeholder:font-medium placeholder:text-slate-400"
+            />
+            <Link className="hidden sm:flex px-8 py-4 bg-[#1E293B] text-white font-black rounded-full hover:bg-slate-800 transition-colors" href="/dashboard">
+              Search
+            </Link>
+          </div>
+        </div>
+        
+        {/* Quick Filters */}
+        <div className="flex flex-wrap justify-center gap-3">
+          <span className="px-4 py-2 rounded-full border-2 border-[#1E293B] bg-[#38BDF8] font-bold text-sm shadow-[2px_2px_0px_#1E293B] hover:-translate-y-0.5 transition-transform cursor-pointer">
+            Grades 6-8 (JSS)
+          </span>
+          <span className="px-4 py-2 rounded-full border-2 border-[#1E293B] bg-[#FB7185] text-white font-bold text-sm shadow-[2px_2px_0px_#1E293B] hover:-translate-y-0.5 transition-transform cursor-pointer">
+            Grades 9-12 (SSS)
+          </span>
+          <span className="px-4 py-2 rounded-full border-2 border-[#1E293B] bg-[#34D399] font-bold text-sm shadow-[2px_2px_0px_#1E293B] hover:-translate-y-0.5 transition-transform cursor-pointer">
+            Tech & AI Skills
+          </span>
+        </div>
+      </main>
+
+      {/* How It Works */}
+      <section className="bg-white border-t-4 border-[#1E293B] py-24 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
           
-          <div className="mb-8 lg:hidden">
-            <Link href="/" className="block hover:opacity-90 transition-opacity w-fit">
-              <Image 
-                src="/edubridge_logo1.png" 
-                alt="EduBridge AI Logo" 
-                width={300} 
-                height={300} 
-                className="h-10 w-auto object-contain object-left scale-[2.2] origin-left mix-blend-multiply" 
-                priority
-              />
-            </Link>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-black text-[#1E293B] mb-4">How AI Understands You</h2>
+            <p className="text-lg font-bold text-slate-500">From the words you type to the answer you get, in 3 easy steps.</p>
           </div>
 
-          <h2 className="text-3xl font-black text-[#1E293B] mb-2">Create Account</h2>
-          <p className="text-slate-500 font-bold mb-6">Sign up to get started with EduBridge.</p>
-
-          {error && (
-            <div className="mb-6 p-3 bg-red-50 border-2 border-red-500 text-red-700 text-sm font-bold rounded-xl">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="name" className="block text-sm font-black text-[#1E293B] mb-2 uppercase tracking-wider">Full Name</label>
-              <input
-                type="text"
-                id="name"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-xl border-2 border-[#1E293B] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#14B8A6] font-medium transition-shadow"
-                placeholder="Jane Doe"
-              />
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 relative z-10">
+            {/* Step 1 */}
+            <div className="flex flex-col items-center text-center max-w-xs">
+              <div className="w-24 h-24 rounded-3xl bg-[#FBBF24] border-4 border-[#1E293B] shadow-[6px_6px_0px_#1E293B] flex items-center justify-center mb-6 relative">
+                <span className="absolute -top-4 -left-4 w-8 h-8 bg-white border-2 border-[#1E293B] rounded-full font-black flex items-center justify-center">1</span>
+                <Lightbulb className="text-[#1E293B]" size={40} />
+              </div>
+              <h3 className="text-xl font-black text-[#1E293B] mb-2">Your Prompt</h3>
+              <p className="text-slate-600 font-medium">Ask any question like &quot;Explain photosynthesis like I am 13.&quot;</p>
             </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-black text-[#1E293B] mb-2 uppercase tracking-wider">Student Email</label>
-              <input
-                type="email"
-                id="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border-2 border-[#1E293B] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#14B8A6] font-medium transition-shadow"
-                placeholder="student@school.edu"
-              />
+            <ArrowRight className="hidden md:block text-[#1E293B] opacity-50" size={32} />
+
+            {/* Step 2 */}
+            <div className="flex flex-col items-center text-center max-w-xs mt-8 md:mt-0">
+              <div className="w-24 h-24 rounded-3xl bg-[#14B8A6] border-4 border-[#1E293B] shadow-[6px_6px_0px_#1E293B] flex items-center justify-center mb-6 relative">
+                <span className="absolute -top-4 -left-4 w-8 h-8 bg-white border-2 border-[#1E293B] rounded-full font-black flex items-center justify-center text-[#1E293B]">2</span>
+                <BrainCircuit className="text-white" size={40} />
+              </div>
+              <h3 className="text-xl font-black text-[#1E293B] mb-2">AI Focus</h3>
+              <p className="text-slate-600 font-medium">The AI reads your curriculum and translates it into simple terms.</p>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-black text-[#1E293B] mb-2 uppercase tracking-wider">Password</label>
-              <input
-                type="password"
-                id="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border-2 border-[#1E293B] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#14B8A6] font-medium transition-shadow"
-                placeholder="••••••••"
-              />
+            <ArrowRight className="hidden md:block text-[#1E293B] opacity-50" size={32} />
+
+            {/* Step 3 */}
+            <div className="flex flex-col items-center text-center max-w-xs mt-8 md:mt-0">
+              <div className="w-24 h-24 rounded-3xl bg-[#FB7185] border-4 border-[#1E293B] shadow-[6px_6px_0px_#1E293B] flex items-center justify-center mb-6 relative">
+                <span className="absolute -top-4 -left-4 w-8 h-8 bg-white border-2 border-[#1E293B] rounded-full font-black flex items-center justify-center text-[#1E293B]">3</span>
+                <Globe2 className="text-white" size={40} />
+              </div>
+              <h3 className="text-xl font-black text-[#1E293B] mb-2">The Answer</h3>
+              <p className="text-slate-600 font-medium">Get a personalized lesson, voice feedback, or an interactive 3D model.</p>
             </div>
+          </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-[#14B8A6] px-4 py-4 text-white font-black text-lg border-2 border-[#1E293B] shadow-[4px_4px_0px_#1E293B] hover:bg-[#0D9488] hover:-translate-y-1 hover:shadow-[6px_6px_0px_#1E293B] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Creating Account...' : 'Create Account'} <ArrowRight size={20} />
-            </button>
-          </form>
+          <div className="mt-20 text-center">
+             <Link className="inline-flex items-center gap-2 px-8 py-4 bg-[#14B8A6] text-white font-black text-lg rounded-full border-2 border-[#1E293B] shadow-[6px_6px_0px_#1E293B] hover:-translate-y-1 hover:shadow-[8px_8px_0px_#1E293B] transition-all" href="/dashboard">
+                Try it now <ArrowRight size={20} />
+             </Link>
+          </div>
 
-          <p className="mt-8 text-center text-sm font-bold text-slate-600">
-            Already have an account?{' '}
-            <Link href="/sign-in" className="text-[#14B8A6] font-black hover:underline">
-              Sign in
-            </Link>
-          </p>
         </div>
-      </div>
+        
+        {/* Decorative Background Elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#FBBF24] rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+      </section>
+
     </div>
   );
 }
