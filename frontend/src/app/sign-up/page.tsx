@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, ArrowRight, UserPlus } from 'lucide-react';
+import { ArrowRight, UserPlus } from 'lucide-react';
+import Image from 'next/image';
 
 export default function SignUp() {
   const router = useRouter();
@@ -19,8 +20,7 @@ export default function SignUp() {
     setError('');
 
     try {
-      // Adjust the endpoint path if your backend engineer named it differently (e.g., /api/v1/auth/register)
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/signup`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
@@ -31,7 +31,11 @@ export default function SignUp() {
       }
 
       const data = await res.json();
-      // Auto-redirect to sign in or dashboard after creating the account
+      
+      // Save the access token returned by the backend to the browser
+      localStorage.setItem('token', data.access_token);
+      
+      // Auto-redirect to dashboard after creating the account
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message);
@@ -43,17 +47,20 @@ export default function SignUp() {
   return (
     <div className="flex min-h-screen bg-[#FFFDF8] text-[#1E293B] font-sans selection:bg-[#FBBF24] selection:text-[#1E293B]">
       
-      {/* Left Column - Branding */}
+      {/* Left Column - Branding (Hidden on mobile) */}
       <div className="hidden lg:flex w-1/2 bg-[#FB7185] border-r-4 border-[#1E293B] p-12 flex-col justify-between relative overflow-hidden">
-        <div className="flex items-center gap-2 relative z-10">
-          <div className="relative flex items-center justify-center w-10 h-10 bg-white border-2 border-[#1E293B] rounded-xl shadow-[2px_2px_0px_#1E293B] overflow-hidden">
-            <BookOpen className="h-6 w-6 text-[#1E293B] absolute bottom-1" />
-            <div className="absolute top-1 w-full h-2 bg-[#FBBF24] rounded-t-full opacity-80" />
-          </div>
-          <span className="font-black text-2xl tracking-tight text-white">
-            EduBridge <span className="text-[#1E293B]">AI</span>
-          </span>
-        </div>
+        
+        {/* Desktop Logo */}
+        <Link href="/" className="relative z-10 block hover:opacity-90 transition-opacity w-fit">
+          <Image 
+            src="/edubridge_logo1.png" 
+            alt="EduBridge AI Logo" 
+            width={200} 
+            height={60} 
+            className="h-24 md:h-32 w-auto object-contain object-left mix-blend-multiply -ml-4"
+            priority
+          />
+        </Link>
         
         <div className="relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1E293B] text-white font-black text-xs uppercase tracking-wider mb-6 shadow-[2px_2px_0px_white]">
@@ -78,14 +85,18 @@ export default function SignUp() {
       <div className="flex w-full lg:w-1/2 flex-col justify-center px-6 py-12 md:px-12 lg:px-24">
         <div className="mx-auto w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl border-4 border-[#1E293B] shadow-[6px_6px_0px_#1E293B]">
           
-          <div className="mb-8 flex items-center gap-2 lg:hidden">
-            <div className="relative flex items-center justify-center w-10 h-10 bg-white border-2 border-[#1E293B] rounded-xl shadow-[2px_2px_0px_#1E293B] overflow-hidden">
-              <BookOpen className="h-6 w-6 text-[#1E293B] absolute bottom-1" />
-              <div className="absolute top-1 w-full h-2 bg-[#14B8A6] rounded-t-full opacity-80" />
-            </div>
-            <span className="font-black text-2xl tracking-tight text-[#1E293B]">
-              EduBridge <span className="text-[#14B8A6]">AI</span>
-            </span>
+          {/* Mobile Logo */}
+          <div className="mb-8 lg:hidden">
+            <Link href="/" className="block hover:opacity-90 transition-opacity w-fit">
+              <Image 
+                src="/edubridge_logo1.png" 
+                alt="EduBridge AI Logo" 
+                width={200} 
+                height={60} 
+                className="h-16 w-auto object-contain object-left mix-blend-multiply -ml-2"
+                priority
+              />
+            </Link>
           </div>
 
           <h2 className="text-3xl font-black text-[#1E293B] mb-2">Create Account</h2>

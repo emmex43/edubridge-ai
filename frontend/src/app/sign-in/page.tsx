@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, ArrowRight, Lock } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowRight, Lock } from 'lucide-react';
 
 export default function SignIn() {
   const router = useRouter();
@@ -18,7 +19,6 @@ export default function SignIn() {
     setError('');
 
     try {
-      // Adjust the endpoint path if your backend engineer named it differently (e.g., /token or /api/v1/login)
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -30,9 +30,8 @@ export default function SignIn() {
       }
 
       const data = await res.json();
-      // Store token if applicable: localStorage.setItem('token', data.access_token);
-      
-      router.push('/dashboard'); // Redirect to dashboard on success
+      localStorage.setItem('token', data.access_token);
+      router.push('/dashboard'); 
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -45,15 +44,17 @@ export default function SignIn() {
       
       {/* Left Column - Branding (Hidden on small screens) */}
       <div className="hidden lg:flex w-1/2 bg-[#14B8A6] border-r-4 border-[#1E293B] p-12 flex-col justify-between relative overflow-hidden">
-        <div className="flex items-center gap-2 relative z-10">
-          <div className="relative flex items-center justify-center w-10 h-10 bg-white border-2 border-[#1E293B] rounded-xl shadow-[2px_2px_0px_#1E293B] overflow-hidden">
-            <BookOpen className="h-6 w-6 text-[#1E293B] absolute bottom-1" />
-            <div className="absolute top-1 w-full h-2 bg-[#FBBF24] rounded-t-full opacity-80" />
-          </div>
-          <span className="font-black text-2xl tracking-tight text-white">
-            EduBridge <span className="text-[#1E293B]">AI</span>
-          </span>
-        </div>
+        
+        <Link href="/" className="relative z-10 block hover:opacity-90 transition-opacity w-fit mt-4">
+          <Image 
+            src="/edubridge_logo1.png" 
+            alt="EduBridge AI Logo" 
+            width={400} 
+            height={400} 
+            className="h-24 md:h-32 w-auto object-contain object-left mix-blend-multiply -ml-4"
+            priority
+          />
+        </Link>
         
         <div className="relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1E293B] text-white font-black text-xs uppercase tracking-wider mb-6 shadow-[2px_2px_0px_white]">
@@ -78,14 +79,17 @@ export default function SignIn() {
       <div className="flex w-full lg:w-1/2 flex-col justify-center px-6 py-12 md:px-12 lg:px-24">
         <div className="mx-auto w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl border-4 border-[#1E293B] shadow-[6px_6px_0px_#1E293B]">
           
-          <div className="mb-8 flex items-center gap-2 lg:hidden">
-            <div className="relative flex items-center justify-center w-10 h-10 bg-white border-2 border-[#1E293B] rounded-xl shadow-[2px_2px_0px_#1E293B] overflow-hidden">
-              <BookOpen className="h-6 w-6 text-[#1E293B] absolute bottom-1" />
-              <div className="absolute top-1 w-full h-2 bg-[#14B8A6] rounded-t-full opacity-80" />
-            </div>
-            <span className="font-black text-2xl tracking-tight text-[#1E293B]">
-              EduBridge <span className="text-[#14B8A6]">AI</span>
-            </span>
+          <div className="mb-8 lg:hidden">
+            <Link href="/" className="block hover:opacity-90 transition-opacity w-fit">
+              <Image 
+                src="/edubridge_logo1.png" 
+                alt="EduBridge AI Logo" 
+                width={300} 
+                height={300} 
+                className="h-24 w-auto object-contain object-left mix-blend-multiply -ml-2" 
+                priority
+              />
+            </Link>
           </div>
 
           <h2 className="text-3xl font-black text-[#1E293B] mb-2">Sign In</h2>
