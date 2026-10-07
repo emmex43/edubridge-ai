@@ -1,43 +1,60 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Play, Pause } from 'lucide-react';
+import { assetUrl } from '@/lib/api';
 
 interface AudioPlayerProps {
     audioUrl: string;
 }
 
+/** Deterministic bar heights — Math.random() in render reshuffled the
+ *  waveform on every re-render, so it flickered instead of animating. */
+const BARS = [38, 62, 45, 80, 55, 92, 48, 70, 40, 85, 58, 74, 44, 66, 50, 78];
+
 export default function AudioPlayer({ audioUrl }: AudioPlayerProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
-    // Auto-pause when audio finishes
+    // `tts_audio_url` arrives as a host-relative "/static/audio/x.wav";
+    // blob: URLs from the local recorder pass through unchanged.
+    const src = assetUrl(audioUrl);
+
+    // Drive the button from the element's own events rather than optimistically
+    // flipping state: play() rejects under the browser's autoplay policy, and
+    // the button would then claim to be playing silent audio.
     useEffect(() => {
         const audio = audioRef.current;
         if (!audio) return;
 
-        const handleEnded = () => setIsPlaying(false);
-        audio.addEventListener('ended', handleEnded);
-        return () => audio.removeEventListener('ended', handleEnded);
+        const onPlay = () => setIsPlaying(true);
+        const onStop = () => setIsPlaying(false);
+
+        audio.addEventListener('play', onPlay);
+        audio.addEventListener('pause', onStop);
+        audio.addEventListener('ended', onStop);
+        return () => {
+            audio.removeEventListener('play', onPlay);
+            audio.removeEventListener('pause', onStop);
+            audio.removeEventListener('ended', onStop);
+        };
     }, []);
 
-    const togglePlay = () => {
-        if (audioRef.current) {
-            if (isPlaying) {
-                audioRef.current.pause();
-            } else {
-                audioRef.current.play();
-            }
-            setIsPlaying(!isPlaying);
-        }
-    };
+    const togglePlay = useCallback(() => {
+        const audio = audioRef.current;
+        if (!audio) return;
+        if (audio.paused) void audio.play().catch(() => setIsPlaying(false));
+        else audio.pause();
+    }, []);
 
     return (
         <div className="flex items-center gap-3 rounded-xl bg-blue-50/50 p-2.5 border border-blue-100 mt-3 w-full max-w-[240px]">
-            <audio ref={audioRef} src={audioUrl} className="hidden" />
+            <audio ref={audioRef} src={src} preload="metadata" className="hidden" />
 
             <button
+                type="button"
                 onClick={togglePlay}
+                aria-label={isPlaying ? 'Pause answer' : 'Play answer'}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm"
             >
                 {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
@@ -45,14 +62,13 @@ export default function AudioPlayer({ audioUrl }: AudioPlayerProps) {
 
             {/* CSS Simulated Waveform */}
             <div className="flex flex-1 items-center gap-[3px] overflow-hidden px-1 h-6">
-                {[...Array(16)].map((_, i) => (
+                {BARS.map((height, i) => (
                     <div
                         key={i}
-                        className={`w-1 rounded-full bg-blue-400 transition-all duration-75`}
+                        className={`w-1 rounded-full bg-blue-400 transition-all duration-150 ${isPlaying ? 'animate-pulse' : ''}`}
                         style={{
-                            height: isPlaying ? `${Math.max(20, Math.random() * 100)}%` : '4px',
-                            opacity: isPlaying ? (Math.random() * 0.5 + 0.5) : 0.5,
-                            animationDelay: `${i * 0.05}s`
+                            height: isPlaying ? `${height}%` : '4px',
+                            animationDelay: `${i * 60}ms`,
                         }}
                     />
                 ))}

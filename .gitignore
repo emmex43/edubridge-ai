@@ -1,4 +1,3 @@
-cat << 'EOF' > .gitignore
 # Node / Next.js
 node_modules/
 .next/
@@ -10,10 +9,23 @@ __pycache__/
 *.py[cod]
 *$py.class
 venv/
+.venv/
+.venv-*/
 env/
 .env
 
-# OS Files
+# Logs
+*.log
+
+# Generated TTS clips. The server recreates static/ on startup and prunes clips
+# after six hours, so this is build output rather than source: committing it
+# would add megabytes of audio that is regenerated on the next voice answer.
+static/
+
+# One-off editor / manual backups (a stray package-lock.json.bak sat one
+# `git add -A` away from being published).
+*.bak
+
+# OS files
 .DS_Store
 Thumbs.db
-EOF

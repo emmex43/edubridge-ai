@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+pydantic
+openai
+numpy
+sqlalchemy
+psycopg2-binary
+bcrypt>=4.0
+python-jose[cryptography]
+python-multipart
+pytest
