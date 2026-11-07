@@ -34,7 +34,10 @@ export default function PauseAndAskOverlay() {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            ? 'auto'
+            : 'smooth';
+        messagesEndRef.current?.scrollIntoView({ behavior });
     }, [messages, isTyping]);
 
     if (!isTutorOpen) return null;
@@ -77,7 +80,7 @@ export default function PauseAndAskOverlay() {
         // The blob URL is local to this tab and plays back the student's own
         // recording — it is not a backend asset, so it is not prefixed.
         const localUrl = URL.createObjectURL(audioBlob);
-        addMessage({ sender: 'user', text: '🎤 Voice message', audioUrl: localUrl });
+        addMessage({ sender: 'user', text: 'Voice message', audioUrl: localUrl });
         setIsTyping(true);
 
         try {
@@ -106,40 +109,55 @@ export default function PauseAndAskOverlay() {
     };
 
     return (
-        <aside className="fixed bottom-6 right-6 z-50 flex h-[620px] w-[380px] flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl transition-all">
+        <aside
+            id="tutor-panel"
+            aria-label="EduBridge AI tutor"
+            className="fixed inset-x-3 bottom-3 z-50 flex h-[min(620px,calc(100dvh_-_1.5rem))] flex-col overflow-hidden rounded-3xl border border-border bg-white shadow-2xl sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[min(420px,calc(100vw_-_3rem))]"
+        >
             {/* Header with Language Toggle */}
-            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-                <div className="flex items-center gap-2 font-bold text-gray-900">
-                    <Sparkles className="h-5 w-5 text-blue-600" />
+            <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-5 sm:py-4">
+                <div className="flex items-center gap-2 font-bold text-foreground">
+                    <Sparkles aria-hidden="true" className="h-5 w-5 text-brand" />
                     <span>EduBridge Tutor</span>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     {/* Language Selector */}
-                    <div className="flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1">
-                        <Globe size={14} className="text-gray-500" />
+                    <div className="flex min-h-11 items-center gap-1 rounded-md border border-border bg-background px-2 py-1">
+                        <Globe aria-hidden="true" size={14} className="text-muted" />
                         <select
                             value={language}
                             onChange={(e) => setLanguage(e.target.value as api.Language)}
-                            className="bg-transparent text-xs font-medium text-gray-700 outline-none cursor-pointer"
+                            aria-label="Tutor response language"
+                            className="min-h-10 max-w-24 cursor-pointer bg-transparent text-xs font-medium text-foreground outline-none"
                         >
                             <option value="English">English</option>
                             <option value="Pidgin">Pidgin</option>
                         </select>
                     </div>
 
-                    <button onClick={toggleTutor} className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
-                        <X size={18} />
+                    <button
+                        type="button"
+                        onClick={toggleTutor}
+                        aria-label="Close AI tutor"
+                        className="flex h-11 w-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-background hover:text-foreground"
+                    >
+                        <X aria-hidden="true" size={18} />
                     </button>
                 </div>
             </div>
 
             {/* Chat Area */}
-            <div className="flex-1 space-y-4 overflow-y-auto bg-gray-50/50 p-4">
+            <div
+                role="log"
+                aria-label="Tutor conversation"
+                aria-relevant="additions"
+                className="flex-1 space-y-4 overflow-y-auto bg-background/70 p-4"
+            >
                 {messages.length === 0 && !isTyping && (
-                    <div className="rounded-2xl border border-dashed border-gray-200 bg-white/60 px-4 py-6 text-center">
-                        <p className="text-sm font-medium text-gray-700">Ask about this module</p>
-                        <p className="mt-1 text-xs text-gray-500">
+                    <div className="rounded-2xl border border-dashed border-border bg-white px-4 py-6 text-center">
+                        <p className="text-sm font-semibold text-foreground">Ask about this module</p>
+                        <p className="mt-1 text-xs leading-5 text-muted">
                             Type a question or use the microphone. Answers are grounded in the
                             course material and follow your language choice.
                         </p>
@@ -152,10 +170,11 @@ export default function PauseAndAskOverlay() {
 
                 {isTyping && (
                     <div className="flex justify-start">
-                        <div className="flex max-w-[85%] items-center gap-1.5 rounded-2xl rounded-bl-sm border border-gray-100 bg-white px-4 py-3.5 shadow-sm">
-                            <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400" style={{ animationDelay: '0ms' }}></span>
-                            <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400" style={{ animationDelay: '150ms' }}></span>
-                            <span className="h-2 w-2 animate-bounce rounded-full bg-blue-400" style={{ animationDelay: '300ms' }}></span>
+                        <div role="status" className="flex max-w-[85%] items-center gap-1.5 rounded-2xl rounded-bl-sm border border-border bg-white px-4 py-3.5 shadow-sm">
+                            <span className="sr-only">Tutor is thinking</span>
+                            <span aria-hidden="true" className="h-2 w-2 animate-bounce rounded-full bg-brand" style={{ animationDelay: '0ms' }}></span>
+                            <span aria-hidden="true" className="h-2 w-2 animate-bounce rounded-full bg-brand" style={{ animationDelay: '150ms' }}></span>
+                            <span aria-hidden="true" className="h-2 w-2 animate-bounce rounded-full bg-brand" style={{ animationDelay: '300ms' }}></span>
                         </div>
                     </div>
                 )}
@@ -164,19 +183,19 @@ export default function PauseAndAskOverlay() {
             </div>
 
             {/* Input Area */}
-            <div className="border-t border-gray-100 p-4 bg-white">
+            <div className="border-t border-border bg-white p-3 sm:p-4">
                 {isRecording ? (
-                    <div className="flex items-center justify-between gap-3 rounded-full bg-red-50 px-4 py-2 border border-red-100">
+                    <div className="flex items-center justify-between gap-3 rounded-full border border-red-200 bg-red-50 px-4 py-2">
                         <div className="flex items-center gap-2">
-                            <span className="h-3 w-3 animate-ping rounded-full bg-red-500" />
-                            <span className="text-xs font-semibold text-red-600">Recording {formatTimer(recordingDuration)}</span>
+                            <span aria-hidden="true" className="h-3 w-3 animate-ping rounded-full bg-red-600" />
+                            <span role="status" className="text-xs font-semibold text-red-800">Recording {formatTimer(recordingDuration)}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                            <button type="button" onClick={cancelRecording} className="rounded-full p-1.5 text-gray-400 hover:bg-red-100 hover:text-red-600 transition-colors">
-                                <Trash2 size={16} />
+                            <button type="button" onClick={cancelRecording} aria-label="Cancel recording" className="flex h-11 w-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-red-100 hover:text-red-800">
+                                <Trash2 aria-hidden="true" size={16} />
                             </button>
-                            <button type="button" onClick={handleStopAndSendVoice} className="flex items-center gap-1 rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700 transition-colors">
-                                <Square size={12} fill="currentColor" /> Send
+                            <button type="button" onClick={handleStopAndSendVoice} className="flex min-h-11 items-center gap-1 rounded-full bg-red-700 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-800">
+                                <Square aria-hidden="true" size={12} fill="currentColor" /> Send recording
                             </button>
                         </div>
                     </div>
@@ -186,9 +205,10 @@ export default function PauseAndAskOverlay() {
                             type="button"
                             onClick={startRecording}
                             disabled={isTyping}
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors disabled:opacity-40"
+                            aria-label="Record a voice message"
+                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-background text-foreground transition-colors hover:bg-brand/10 hover:text-brand disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                            <Mic size={18} />
+                            <Mic aria-hidden="true" size={18} />
                         </button>
                         <input
                             type="text"
@@ -196,14 +216,16 @@ export default function PauseAndAskOverlay() {
                             onChange={(e) => setInputText(e.target.value)}
                             disabled={isTyping}
                             placeholder={isTyping ? 'Thinking…' : 'Ask a question...'}
-                            className="flex-1 rounded-full border border-gray-200 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50"
+                            aria-label="Ask the AI tutor"
+                            className="min-h-11 min-w-0 flex-1 rounded-full border border-border px-4 py-2 text-sm text-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:bg-background"
                         />
                         <button
                             type="submit"
                             disabled={!inputText.trim() || isTyping}
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white disabled:opacity-40 hover:bg-blue-700 transition-colors"
+                            aria-label="Send message"
+                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                            {isTyping ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                            {isTyping ? <Loader2 aria-hidden="true" size={16} className="animate-spin" /> : <Send aria-hidden="true" size={16} />}
                         </button>
                     </form>
                 )}
@@ -216,7 +238,7 @@ function MessageBubble({ msg }: { msg: Message }) {
     if (msg.error) {
         return (
             <div className="flex justify-start">
-                <div className="max-w-[85%] rounded-2xl rounded-bl-sm border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900 shadow-sm">
+                <div role="alert" className="max-w-[85%] rounded-2xl rounded-bl-sm border border-amber-300 bg-amber-50 px-4 py-2.5 text-sm text-amber-950 shadow-sm">
                     {msg.text}
                 </div>
             </div>
@@ -225,7 +247,7 @@ function MessageBubble({ msg }: { msg: Message }) {
 
     return (
         <div className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${msg.sender === 'user' ? 'rounded-br-sm bg-blue-600 text-white' : 'rounded-bl-sm border border-gray-100 bg-white text-gray-800'}`}>
+            <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${msg.sender === 'user' ? 'rounded-br-sm bg-brand text-white' : 'rounded-bl-sm border border-border bg-white text-foreground'}`}>
                 <FormattedMessage content={msg.text} />
                 {msg.audioUrl && <AudioPlayer audioUrl={msg.audioUrl} />}
             </div>

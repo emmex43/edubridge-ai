@@ -1,139 +1,288 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ArrowRight, BrainCircuit, Globe2, Lightbulb } from 'lucide-react';
+import {
+  ArrowRight,
+  BookOpen,
+  BrainCircuit,
+  Globe2,
+  Lightbulb,
+  Sparkles,
+} from 'lucide-react';
+
+const learningBenefits = [
+  {
+    icon: BookOpen,
+    title: 'Made for your curriculum',
+    description:
+      'Explore science, maths, history, and digital skills at a level that makes sense for you.',
+    className: 'bg-amber-100 text-amber-950',
+  },
+  {
+    icon: BrainCircuit,
+    title: 'A tutor that listens',
+    description:
+      'Ask follow-up questions and get a patient explanation grounded in what you are learning.',
+    className: 'bg-teal-100 text-teal-950',
+  },
+  {
+    icon: Globe2,
+    title: 'Learn in your language',
+    description:
+      'Switch between English and Pidgin to find the explanation that feels clearest.',
+    className: 'bg-sky-100 text-sky-950',
+  },
+];
+
+const steps = [
+  {
+    number: '01',
+    title: 'Choose a lesson',
+    description: 'Pick a topic and start with a short, guided lesson.',
+    icon: BookOpen,
+  },
+  {
+    number: '02',
+    title: 'Explore the idea',
+    description: 'Watch, experiment with a 3D model, and learn at your pace.',
+    icon: Lightbulb,
+  },
+  {
+    number: '03',
+    title: 'Ask anything',
+    description: 'Your AI tutor can explain a tricky part in a new way.',
+    icon: BrainCircuit,
+  },
+];
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#FFFDF8] text-[#1E293B] font-sans selection:bg-[#FBBF24] selection:text-[#1E293B]">
-      
-      {/* Navigation */}
-      <nav className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto border-b-2 border-[#1E293B]/10">
-        <Link href="/" className="relative z-10 block hover:opacity-90 transition-opacity">
-          <Image 
-            src="/edubridge_logo1.png" 
-            alt="EduBridge AI Logo" 
-            width={300} 
-            height={300} 
-            className="h-12 w-auto object-contain object-left scale-[2] sm:scale-[2.5] origin-left mix-blend-multiply" 
+    <div className="min-h-screen overflow-hidden bg-background text-foreground">
+      <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 lg:px-10">
+        <Link
+          href="/"
+          aria-label="EduBridge AI home"
+          className="rounded-xl focus-visible:outline-offset-4"
+        >
+          <Image
+            src="/edubridge_logo1.png"
+            alt="EduBridge AI"
+            width={300}
+            height={300}
             priority
+            className="h-12 w-auto object-contain object-left"
           />
         </Link>
-        <div className="hidden md:flex items-center gap-8 font-bold text-sm">
-          <Link className="hover:text-[#14B8A6] transition-colors" href="#">Courses</Link>
-          <Link className="hover:text-[#14B8A6] transition-colors" href="#">Tutors</Link>
-          <Link className="text-slate-500 hover:text-[#1E293B] transition-colors" href="/sign-in">Sign In</Link>
-          <Link className="px-6 py-2.5 bg-[#14B8A6] text-white rounded-full border-2 border-[#1E293B] shadow-[3px_3px_0px_#1E293B] hover:bg-[#0D9488] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all" href="/dashboard">
-            Start Learning
+        <nav aria-label="Main navigation" className="flex items-center gap-3 sm:gap-7">
+          <Link
+            href="#how-it-works"
+            className="hidden rounded-lg px-2 py-2 text-sm font-semibold text-muted transition-colors hover:text-foreground sm:inline-flex"
+          >
+            How it works
           </Link>
-        </div>
-      </nav>
+          <Link
+            href="/sign-in"
+            className="rounded-lg px-2 py-2 text-sm font-semibold text-foreground transition-colors hover:text-brand"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/dashboard"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-hover"
+          >
+            Start learning <ArrowRight aria-hidden="true" size={16} />
+          </Link>
+        </nav>
+      </header>
 
-      {/* Hero Section */}
-      <main className="max-w-5xl mx-auto px-6 pt-20 pb-20 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FBBF24] border-2 border-[#1E293B] text-[#1E293B] font-black text-xs uppercase tracking-wider mb-8 shadow-[2px_2px_0px_#1E293B]">
-          <span className="animate-pulse">●</span> For JSS & SSS Students
-        </div>
-        
-        <h1 className="text-5xl md:text-7xl font-black text-[#1E293B] tracking-tight mb-8 leading-[1.1]">
-          Master Math, Science & <br className="hidden md:block" />
-          <span className="relative inline-block">
-            <span className="relative z-10">AI Skills</span>
-            <span className="absolute bottom-1 left-0 w-full h-4 md:h-6 bg-[#FBBF24] -z-10 rounded-sm"></span>
-          </span> for the Future.
-        </h1>
-        
-        <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto font-medium leading-relaxed">
-          From Nigerian History to Prompt Engineering, learn through interactive stories and a conversational AI tutor that adapts to your grade.
-        </p>
-
-        {/* Discovery Search Bar */}
-        <div className="max-w-2xl mx-auto mb-10 relative">
-          <div className="flex items-center bg-white border-4 border-[#1E293B] rounded-full p-2 shadow-[6px_6px_0px_#14B8A6]">
-            <div className="pl-4 pr-2 text-slate-400">
-              <Search size={24} />
+      <main>
+        <section className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 pb-20 pt-10 sm:px-8 sm:pb-24 sm:pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:px-10 lg:pb-28 lg:pt-20">
+          <div className="relative z-10">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-2 text-sm font-semibold text-amber-950">
+              <Sparkles aria-hidden="true" size={16} />
+              Built for JSS &amp; SSS learners
             </div>
-            <input 
-              type="text" 
-              placeholder="What do you want to learn today? (e.g. Plate Tectonics, JSS2 Math)"
-              className="flex-1 bg-transparent py-3 px-2 outline-none text-[#1E293B] font-bold placeholder:font-medium placeholder:text-slate-400"
+            <h1 className="max-w-3xl text-balance text-4xl font-black leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
+              Big ideas, made{' '}
+              <span className="relative inline-block whitespace-nowrap">
+                <span className="relative z-10">clearer.</span>
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-x-0 bottom-1 -z-0 h-3 rounded-sm bg-amber-300/80 sm:bottom-2 sm:h-4"
+                />
+              </span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-8 text-muted sm:text-xl">
+              Learn science, maths, history, and AI through guided lessons, hands-on
+              3D models, and a tutor who explains things your way.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link
+                href="/dashboard"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 font-bold text-white shadow-md transition hover:bg-brand-hover"
+              >
+                Explore lessons <ArrowRight aria-hidden="true" size={18} />
+              </Link>
+              <Link
+                href="#how-it-works"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-border bg-white px-6 py-3 font-bold text-foreground transition hover:border-brand hover:text-brand"
+              >
+                See how it works
+              </Link>
+            </div>
+            <p className="mt-5 text-sm font-medium text-muted">
+              Learn at your pace. Ask questions without feeling rushed.
+            </p>
+          </div>
+
+          <div
+            aria-label="An overview of EduBridge's interactive lessons and tutor"
+            className="relative mx-auto w-full max-w-xl"
+          >
+            <div
+              aria-hidden="true"
+              className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-amber-200/70 blur-2xl"
             />
-            <Link className="hidden sm:flex px-8 py-4 bg-[#1E293B] text-white font-black rounded-full hover:bg-slate-800 transition-colors" href="/dashboard">
-              Search
+            <div
+              aria-hidden="true"
+              className="absolute -bottom-8 -left-8 h-40 w-40 rounded-full bg-teal-200/70 blur-2xl"
+            />
+            <div className="relative rounded-[2rem] border border-white/80 bg-white p-4 shadow-[0_24px_70px_-32px_rgba(23,42,39,0.35)] sm:p-6">
+              <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand">
+                    Your learning space
+                  </p>
+                  <p className="mt-1 text-lg font-bold">Earth science</p>
+                </div>
+                <span className="rounded-full bg-teal-50 px-3 py-1.5 text-xs font-bold text-teal-900">
+                  Grade 7–10
+                </span>
+              </div>
+              <div className="mt-4 grid gap-4 sm:grid-cols-[1.15fr_0.85fr]">
+                <div className="flex min-h-56 flex-col justify-between overflow-hidden rounded-2xl bg-slate-950 p-5 text-white">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
+                    <Globe2 aria-hidden="true" size={17} />
+                    Interactive 3D lesson
+                  </div>
+                  <div className="relative mx-auto flex h-32 w-32 items-center justify-center">
+                    <div className="absolute h-32 w-32 rounded-full bg-sky-500/20 blur-xl" />
+                    <div className="relative h-24 w-24 rounded-full bg-[radial-gradient(circle_at_34%_30%,#fde68a_0%,#fb923c_28%,#c2410c_62%,#7c2d12_100%)] shadow-[inset_-14px_-10px_24px_rgba(15,23,42,0.55),0_0_34px_rgba(56,189,248,0.25)]">
+                      <span className="absolute left-3 top-8 h-3 w-5 rounded-full bg-amber-100/70" />
+                      <span className="absolute bottom-5 right-4 h-4 w-4 rounded-full bg-red-950/60" />
+                    </div>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-200">
+                    Explore the layers of the Earth
+                  </p>
+                </div>
+                <div className="flex flex-col justify-between gap-4">
+                  <div className="rounded-2xl bg-amber-50 p-4">
+                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-amber-200 text-amber-950">
+                      <Lightbulb aria-hidden="true" size={19} />
+                    </div>
+                    <p className="text-sm font-bold">A question, answered</p>
+                    <p className="mt-1 text-xs leading-5 text-muted">
+                      Get a clear explanation, then ask a follow-up.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-teal-50 p-4">
+                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-teal-200 text-teal-950">
+                      <BrainCircuit aria-hidden="true" size={19} />
+                    </div>
+                    <p className="text-sm font-bold">Made for your pace</p>
+                    <div
+                      aria-hidden="true"
+                      className="mt-3 h-2 overflow-hidden rounded-full bg-white"
+                    >
+                      <div className="h-full w-2/3 rounded-full bg-brand" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center gap-3 rounded-2xl border border-border bg-background px-4 py-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-white">
+                  <Sparkles aria-hidden="true" size={17} />
+                </span>
+                <p className="text-sm leading-5 text-muted">
+                  <span className="font-bold text-foreground">Your AI tutor</span>{' '}
+                  is ready when you need a hand.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section aria-label="Learning benefits" className="border-y border-border bg-white">
+          <div className="mx-auto grid max-w-7xl gap-4 px-5 py-8 sm:grid-cols-3 sm:px-8 lg:px-10">
+            {learningBenefits.map(({ icon: Icon, title, description, className }) => (
+              <article key={title} className="flex gap-4 rounded-2xl p-4">
+                <div
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${className}`}
+                >
+                  <Icon aria-hidden="true" size={21} />
+                </div>
+                <div>
+                  <h2 className="font-bold">{title}</h2>
+                  <p className="mt-1 text-sm leading-6 text-muted">{description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section
+          id="how-it-works"
+          className="mx-auto max-w-7xl scroll-mt-8 px-5 py-20 sm:px-8 sm:py-24 lg:px-10"
+        >
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-brand">
+              Learning that clicks
+            </p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
+              Understand it, don’t just memorize it.
+            </h2>
+            <p className="mt-4 text-lg leading-7 text-muted">
+              Build understanding one question, lesson, and discovery at a time.
+            </p>
+          </div>
+          <ol className="mt-12 grid gap-5 md:grid-cols-3">
+            {steps.map(({ number, title, description, icon: Icon }) => (
+              <li
+                key={number}
+                className="rounded-3xl border border-border bg-white p-6 shadow-sm sm:p-7"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 text-brand">
+                    <Icon aria-hidden="true" size={23} />
+                  </span>
+                  <span className="text-sm font-bold tracking-widest text-muted">
+                    {number}
+                  </span>
+                </div>
+                <h3 className="mt-6 text-xl font-bold">{title}</h3>
+                <p className="mt-2 leading-7 text-muted">{description}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-10 text-center">
+            <Link
+              href="/dashboard"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 font-bold text-white shadow-md transition hover:bg-brand-hover"
+            >
+              Find your next lesson <ArrowRight aria-hidden="true" size={18} />
             </Link>
           </div>
-        </div>
-        
-        {/* Quick Filters */}
-        <div className="flex flex-wrap justify-center gap-3">
-          <span className="px-4 py-2 rounded-full border-2 border-[#1E293B] bg-[#38BDF8] font-bold text-sm shadow-[2px_2px_0px_#1E293B] hover:-translate-y-0.5 transition-transform cursor-pointer">
-            Grades 6-8 (JSS)
-          </span>
-          <span className="px-4 py-2 rounded-full border-2 border-[#1E293B] bg-[#FB7185] text-white font-bold text-sm shadow-[2px_2px_0px_#1E293B] hover:-translate-y-0.5 transition-transform cursor-pointer">
-            Grades 9-12 (SSS)
-          </span>
-          <span className="px-4 py-2 rounded-full border-2 border-[#1E293B] bg-[#34D399] font-bold text-sm shadow-[2px_2px_0px_#1E293B] hover:-translate-y-0.5 transition-transform cursor-pointer">
-            Tech & AI Skills
-          </span>
-        </div>
+        </section>
       </main>
 
-      {/* How It Works */}
-      <section className="bg-white border-t-4 border-[#1E293B] py-24 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
-          
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-[#1E293B] mb-4">How AI Understands You</h2>
-            <p className="text-lg font-bold text-slate-500">From the words you type to the answer you get, in 3 easy steps.</p>
-          </div>
-
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 relative z-10">
-            {/* Step 1 */}
-            <div className="flex flex-col items-center text-center max-w-xs">
-              <div className="w-24 h-24 rounded-3xl bg-[#FBBF24] border-4 border-[#1E293B] shadow-[6px_6px_0px_#1E293B] flex items-center justify-center mb-6 relative">
-                <span className="absolute -top-4 -left-4 w-8 h-8 bg-white border-2 border-[#1E293B] rounded-full font-black flex items-center justify-center">1</span>
-                <Lightbulb className="text-[#1E293B]" size={40} />
-              </div>
-              <h3 className="text-xl font-black text-[#1E293B] mb-2">Your Prompt</h3>
-              <p className="text-slate-600 font-medium">Ask any question like &quot;Explain photosynthesis like I am 13.&quot;</p>
-            </div>
-
-            <ArrowRight className="hidden md:block text-[#1E293B] opacity-50" size={32} />
-
-            {/* Step 2 */}
-            <div className="flex flex-col items-center text-center max-w-xs mt-8 md:mt-0">
-              <div className="w-24 h-24 rounded-3xl bg-[#14B8A6] border-4 border-[#1E293B] shadow-[6px_6px_0px_#1E293B] flex items-center justify-center mb-6 relative">
-                <span className="absolute -top-4 -left-4 w-8 h-8 bg-white border-2 border-[#1E293B] rounded-full font-black flex items-center justify-center text-[#1E293B]">2</span>
-                <BrainCircuit className="text-white" size={40} />
-              </div>
-              <h3 className="text-xl font-black text-[#1E293B] mb-2">AI Focus</h3>
-              <p className="text-slate-600 font-medium">The AI reads your curriculum and translates it into simple terms.</p>
-            </div>
-
-            <ArrowRight className="hidden md:block text-[#1E293B] opacity-50" size={32} />
-
-            {/* Step 3 */}
-            <div className="flex flex-col items-center text-center max-w-xs mt-8 md:mt-0">
-              <div className="w-24 h-24 rounded-3xl bg-[#FB7185] border-4 border-[#1E293B] shadow-[6px_6px_0px_#1E293B] flex items-center justify-center mb-6 relative">
-                <span className="absolute -top-4 -left-4 w-8 h-8 bg-white border-2 border-[#1E293B] rounded-full font-black flex items-center justify-center text-[#1E293B]">3</span>
-                <Globe2 className="text-white" size={40} />
-              </div>
-              <h3 className="text-xl font-black text-[#1E293B] mb-2">The Answer</h3>
-              <p className="text-slate-600 font-medium">Get a personalized lesson, voice feedback, or an interactive 3D model.</p>
-            </div>
-          </div>
-
-          <div className="mt-20 text-center">
-             <Link className="inline-flex items-center gap-2 px-8 py-4 bg-[#14B8A6] text-white font-black text-lg rounded-full border-2 border-[#1E293B] shadow-[6px_6px_0px_#1E293B] hover:-translate-y-1 hover:shadow-[8px_8px_0px_#1E293B] transition-all" href="/dashboard">
-                Try it now <ArrowRight size={20} />
-             </Link>
-          </div>
-
+      <footer className="border-t border-border bg-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
+          <p>© 2026 EduBridge AI. Learn at your pace.</p>
+          <Link href="/sign-in" className="font-semibold text-brand hover:underline">
+            Sign in to your learning space
+          </Link>
         </div>
-        
-        {/* Decorative Background Elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#FBBF24] rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-      </section>
-
+      </footer>
     </div>
   );
 }

@@ -36,7 +36,7 @@ const activeModules: ModuleItem[] = [
     progress: 45,
     timeSpent: '2h 10m',
     themeColor: 'blue',
-    link: '#',
+    link: '/learn',
   },
   {
     id: '3',
@@ -47,7 +47,7 @@ const activeModules: ModuleItem[] = [
     progress: 25,
     timeSpent: '50m',
     themeColor: 'yellow',
-    link: '#',
+    link: '/learn',
   },
   {
     id: '4',
@@ -58,79 +58,80 @@ const activeModules: ModuleItem[] = [
     progress: 10,
     timeSpent: '30m',
     themeColor: 'coral',
-    link: '#',
+    link: '/learn',
   },
 ];
 
 const colorStyles = {
   teal: {
-    banner: 'bg-[#14B8A6]',
-    badge: 'bg-[#14B8A6] text-white',
-    bar: 'bg-[#14B8A6]',
-    btn: 'bg-[#14B8A6] hover:bg-[#0D9488] text-white',
+    banner: 'bg-teal-50',
+    badge: 'bg-teal-100 text-teal-950',
+    bar: 'bg-teal-700',
+    btn: 'bg-brand text-white hover:bg-brand-hover',
   },
   blue: {
-    banner: 'bg-[#38BDF8]',
-    badge: 'bg-[#38BDF8] text-[#1E293B]',
-    bar: 'bg-[#38BDF8]',
-    btn: 'bg-[#38BDF8] hover:bg-[#0284C7] text-white',
+    banner: 'bg-sky-50',
+    badge: 'bg-sky-100 text-sky-950',
+    bar: 'bg-sky-700',
+    btn: 'bg-brand text-white hover:bg-brand-hover',
   },
   yellow: {
-    banner: 'bg-[#FBBF24]',
-    badge: 'bg-[#FBBF24] text-[#1E293B]',
-    bar: 'bg-[#FBBF24]',
-    btn: 'bg-[#FBBF24] hover:bg-[#D97706] text-[#1E293B]',
+    banner: 'bg-amber-50',
+    badge: 'bg-amber-100 text-amber-950',
+    bar: 'bg-amber-500',
+    btn: 'bg-brand text-white hover:bg-brand-hover',
   },
   coral: {
-    banner: 'bg-[#FB7185]',
-    badge: 'bg-[#FB7185] text-white',
-    bar: 'bg-[#FB7185]',
-    btn: 'bg-[#FB7185] hover:bg-[#E11D48] text-white',
+    banner: 'bg-rose-50',
+    badge: 'bg-rose-100 text-rose-950',
+    bar: 'bg-rose-700',
+    btn: 'bg-brand text-white hover:bg-brand-hover',
   },
   green: {
-    banner: 'bg-[#34D399]',
-    badge: 'bg-[#34D399] text-[#1E293B]',
-    bar: 'bg-[#34D399]',
-    btn: 'bg-[#34D399] hover:bg-[#059669] text-white',
+    banner: 'bg-emerald-50',
+    badge: 'bg-emerald-100 text-emerald-950',
+    bar: 'bg-emerald-700',
+    btn: 'bg-brand text-white hover:bg-brand-hover',
   },
 };
 
 export default function DashboardPage() {
   return (
-    <main className="min-h-screen bg-[#FFFDF8] text-[#1E293B] p-6 md:p-12">
-      <div className="mx-auto max-w-6xl space-y-10">
+    <main className="min-h-screen bg-background px-5 py-8 text-foreground sm:px-8 sm:py-10 lg:px-10">
+      <div className="mx-auto max-w-7xl space-y-10">
 
         {/* Dashboard Header */}
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-2 border-[#1E293B]/10 pb-8">
+        <header className="flex flex-col justify-between gap-8 border-b border-border pb-8 md:flex-row md:items-end">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FBBF24] border-2 border-[#1E293B] px-3 py-1 text-xs font-black text-[#1E293B] shadow-[2px_2px_0px_#1E293B]">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-950">
                 <Sparkles size={14} /> Junior Scholar
               </span>
-              <span className="text-xs font-bold text-slate-500 bg-white border border-[#1E293B]/20 rounded-full px-2.5 py-0.5">
+              <span className="inline-flex min-h-8 items-center rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-muted">
                 Grades 6–12
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-black text-[#1E293B] tracking-tight">
-              Welcome back, <span className="bg-[#FBBF24] px-2 py-0.5 rounded-md border border-[#1E293B]">Explorer</span>
+            <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
+              Welcome back, Explorer
             </h1>
-            <p className="text-slate-600 font-medium mt-2">
-              Ready to learn science, history, and build cool AI skills today?
+            <p className="mt-2 max-w-xl leading-7 text-muted">
+              Ready to learn something new? Pick up where you left off or explore a
+              different topic.
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="bg-white border-2 border-[#1E293B] rounded-2xl p-4 shadow-[3px_3px_0px_#1E293B] text-center min-w-[110px]">
-              <span className="block text-xs font-bold uppercase tracking-wider text-slate-500">Progress</span>
-              <span className="text-2xl font-black text-[#1E293B]">48%</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="min-w-[130px] rounded-2xl border border-border bg-white px-5 py-4">
+              <span className="block text-xs font-semibold uppercase tracking-wider text-muted">Progress</span>
+              <span className="mt-1 block text-2xl font-black">48%</span>
             </div>
-            <div className="bg-white border-2 border-[#1E293B] rounded-2xl p-4 shadow-[3px_3px_0px_#1E293B] text-center min-w-[110px]">
-              <span className="block text-xs font-bold uppercase tracking-wider text-slate-500">Time</span>
-              <span className="text-2xl font-black text-[#1E293B]">5h 15m</span>
+            <div className="min-w-[130px] rounded-2xl border border-border bg-white px-5 py-4">
+              <span className="block text-xs font-semibold uppercase tracking-wider text-muted">Time learned</span>
+              <span className="mt-1 block text-2xl font-black">5h 15m</span>
             </div>
             <Link
               href="/tutor/upload"
-              className="hidden lg:flex items-center gap-2 px-4 py-4 rounded-2xl bg-[#1E293B] text-white font-bold text-sm hover:bg-slate-800 transition"
+              className="hidden min-h-12 items-center gap-2 rounded-full border border-border bg-white px-5 py-3 text-sm font-bold transition hover:border-brand hover:text-brand lg:flex"
               title="Add lesson via Tutor Studio"
             >
               <PlusCircle size={18} />
@@ -140,18 +141,13 @@ export default function DashboardPage() {
         </header>
 
         {/* Active Modules Section */}
-        <section>
-          <div className="mb-6 flex items-center justify-between">
+        <section id="learning-track" className="scroll-mt-8">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-2xl font-black text-[#1E293B]">Your Learning Track</h2>
-              <p className="text-sm font-medium text-slate-500">Step-by-step interactive lessons and AI chats</p>
+              <h2 className="text-2xl font-black">Your learning track</h2>
+              <p className="mt-1 text-sm leading-6 text-muted">Interactive lessons and AI chats, one step at a time.</p>
             </div>
-            <Link
-              href="#"
-              className="text-sm font-extrabold text-[#14B8A6] hover:underline flex items-center gap-1"
-            >
-              Browse All Courses →
-            </Link>
+            <span className="text-sm font-semibold text-muted">{activeModules.length} lessons in progress</span>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
@@ -160,38 +156,46 @@ export default function DashboardPage() {
               return (
                 <div
                   key={mod.id}
-                  className="flex flex-col rounded-3xl bg-white border-2 border-[#1E293B] shadow-[5px_5px_0px_#1E293B] overflow-hidden transition-transform hover:-translate-y-1"
+                  className="flex flex-col overflow-hidden rounded-3xl border border-border bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg"
                 >
                   {/* Card Header Strip */}
-                  <div className={`p-4 ${theme.banner} border-b-2 border-[#1E293B] flex items-center justify-between`}>
-                    <span className="w-8 h-8 rounded-xl bg-white border-2 border-[#1E293B] font-black text-sm flex items-center justify-center shadow-[2px_2px_0px_#1E293B]">
+                  <div className={`flex items-center justify-between border-b border-border px-5 py-4 ${theme.banner}`}>
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-sm font-black text-foreground shadow-sm">
                       {mod.stepNumber}
                     </span>
-                    <span className="text-xs font-black uppercase tracking-wider bg-white/90 border border-[#1E293B] rounded-full px-2.5 py-0.5 text-[#1E293B]">
+                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${theme.badge}`}>
                       {mod.grade}
                     </span>
                   </div>
 
                   {/* Card Body */}
                   <div className="flex flex-1 flex-col p-5">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    <span className="mb-1 text-xs font-bold uppercase tracking-wider text-muted">
                       {mod.category}
                     </span>
-                    <h3 className="text-lg font-black text-[#1E293B] leading-snug mb-4">
+                    <h3 className="mb-4 text-lg font-bold leading-snug">
                       {mod.title}
                     </h3>
 
                     {/* Progress */}
                     <div className="mt-auto space-y-2 pt-2">
-                      <div className="flex items-center justify-between text-xs font-bold text-slate-600">
+                      <div className="flex items-center justify-between gap-3 text-xs font-semibold text-muted">
                         <span>{mod.progress}% Complete</span>
                         <span className="flex items-center gap-1">
-                          <Clock size={12} /> {mod.timeSpent}
+                          <Clock aria-hidden="true" size={14} /> {mod.timeSpent}
                         </span>
                       </div>
-                      <div className="h-3 w-full rounded-full bg-slate-100 border-2 border-[#1E293B] overflow-hidden p-0.5">
+                      <div
+                        role="progressbar"
+                        aria-label={`${mod.title} completion`}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={mod.progress}
+                        className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100"
+                      >
                         <div
-                          className={`h-full rounded-full ${theme.bar} transition-all duration-500`}
+                          aria-hidden="true"
+                          className={`h-full rounded-full transition-all duration-500 ${theme.bar}`}
                           style={{ width: `${mod.progress}%` }}
                         />
                       </div>
@@ -200,9 +204,9 @@ export default function DashboardPage() {
                     {/* Resume Action */}
                     <Link
                       href={mod.link}
-                      className={`mt-5 flex w-full items-center justify-center gap-2 rounded-full py-2.5 px-4 font-extrabold text-sm border-2 border-[#1E293B] shadow-[3px_3px_0px_#1E293B] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all ${theme.btn}`}
+                      className={`mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-colors ${theme.btn}`}
                     >
-                      <PlayCircle size={16} />
+                      <PlayCircle aria-hidden="true" size={17} />
                       <span>{mod.progress === 100 ? 'Review' : 'Continue'}</span>
                     </Link>
                   </div>

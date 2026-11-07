@@ -146,10 +146,11 @@ export default function ModelViewer({
             {/* Fullscreen Toggle Button */}
             <button
                 onClick={toggleFullscreen}
-                className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/10 text-slate-200 backdrop-blur-md transition-colors hover:bg-white/20 hover:text-white shadow-sm"
-                title="Toggle Fullscreen"
+                type="button"
+                aria-label={isFullscreen ? 'Exit fullscreen model view' : 'Enter fullscreen model view'}
+                className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-lg border border-white/20 bg-slate-950/80 text-white shadow-sm backdrop-blur-md transition-colors hover:bg-slate-900"
             >
-                {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+                {isFullscreen ? <Minimize aria-hidden="true" size={18} /> : <Maximize aria-hidden="true" size={18} />}
             </button>
         </div>
     );

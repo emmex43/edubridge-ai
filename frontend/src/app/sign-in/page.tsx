@@ -40,10 +40,10 @@ export default function SignIn() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#FFFDF8] text-[#1E293B] font-sans selection:bg-[#FBBF24] selection:text-[#1E293B]">
+    <div className="flex min-h-screen bg-background font-sans text-foreground">
       
       {/* Left Column - Branding (Hidden on small screens) */}
-      <div className="hidden lg:flex w-1/2 bg-[#14B8A6] border-r-4 border-[#1E293B] p-12 flex-col justify-between relative overflow-hidden">
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden border-r border-border bg-brand p-12 lg:flex">
         
         <Link href="/" className="relative z-10 block hover:opacity-90 transition-opacity w-fit mt-4">
           <Image 
@@ -69,7 +69,7 @@ export default function SignIn() {
           </p>
         </div>
         
-        <div className="text-sm font-bold text-[#1E293B] relative z-10">
+        <div className="relative z-10 text-sm font-semibold text-white">
           © 2026 EduBridge AI. All rights reserved.
         </div>
         <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-white rounded-full border-4 border-[#1E293B] opacity-10 pointer-events-none"></div>
@@ -77,7 +77,7 @@ export default function SignIn() {
 
       {/* Right Column - Form */}
       <div className="flex w-full lg:w-1/2 flex-col justify-center px-6 py-12 md:px-12 lg:px-24">
-        <div className="mx-auto w-full max-w-md bg-white p-8 sm:p-10 rounded-3xl border-4 border-[#1E293B] shadow-[6px_6px_0px_#1E293B]">
+        <div className="mx-auto w-full max-w-md rounded-3xl border border-border bg-white p-6 shadow-sm sm:p-10">
           
           <div className="mb-8 lg:hidden">
             <Link href="/" className="block hover:opacity-90 transition-opacity w-fit">
@@ -92,43 +92,42 @@ export default function SignIn() {
             </Link>
           </div>
 
-          <h2 className="text-3xl font-black text-[#1E293B] mb-2">Sign In</h2>
-          <p className="text-slate-500 font-bold mb-6">Enter your details to access your dashboard.</p>
+          <h2 className="mb-2 text-3xl font-black">Sign in</h2>
+          <p className="mb-6 font-medium text-muted">Enter your details to access your dashboard.</p>
 
           {error && (
-            <div className="mb-6 p-3 bg-red-50 border-2 border-red-500 text-red-700 text-sm font-bold rounded-xl">
+            <div role="alert" className="mb-6 rounded-xl border border-red-300 bg-red-50 p-3 text-sm font-semibold text-red-800">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-black text-[#1E293B] mb-2 uppercase tracking-wider">Email Address</label>
+              <label htmlFor="email" className="mb-2 block text-sm font-bold">Email address</label>
               <input
                 type="email"
                 id="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border-2 border-[#1E293B] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#14B8A6] font-medium transition-shadow"
+                className="min-h-12 w-full rounded-xl border border-border px-4 py-3 font-medium transition-shadow focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
                 placeholder="student@school.edu"
               />
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="block text-sm font-black text-[#1E293B] uppercase tracking-wider">Password</label>
-                <Link href="#" className="text-xs font-black text-[#14B8A6] hover:underline">
-                  Forgot?
-                </Link>
+              <div className="mb-2">
+                <label htmlFor="password" className="block text-sm font-bold">Password</label>
               </div>
               <input
                 type="password"
                 id="password"
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border-2 border-[#1E293B] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#14B8A6] font-medium transition-shadow"
+                className="min-h-12 w-full rounded-xl border border-border px-4 py-3 font-medium transition-shadow focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
                 placeholder="••••••••"
               />
             </div>
@@ -137,7 +136,7 @@ export default function SignIn() {
                <input 
                  type="checkbox" 
                  id="remember"
-                 className="w-4 h-4 rounded border-2 border-[#1E293B] text-[#14B8A6] focus:ring-[#14B8A6]" 
+                 className="h-5 w-5 rounded border-border text-brand focus:ring-brand"
                />
                <label htmlFor="remember" className="text-sm font-bold text-slate-600 cursor-pointer">
                  Remember me
@@ -147,15 +146,15 @@ export default function SignIn() {
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-[#1E293B] px-4 py-4 text-white font-black text-lg border-2 border-[#1E293B] shadow-[4px_4px_0px_#1E293B] hover:bg-slate-800 hover:-translate-y-1 hover:shadow-[6px_6px_0px_#1E293B] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              className="mt-8 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-brand px-4 py-3 text-lg font-bold text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isLoading ? 'Connecting...' : 'Sign In'} <ArrowRight size={20} />
+              {isLoading ? 'Connecting...' : 'Sign in'} <ArrowRight aria-hidden="true" size={20} />
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm font-bold text-slate-600">
+          <p className="mt-8 text-center text-sm font-medium text-muted">
             Don't have an account?{' '}
-            <Link href="/sign-up" className="text-[#FB7185] font-black hover:underline">
+            <Link href="/sign-up" className="font-bold text-rose-800 hover:underline">
               Sign up
             </Link>
           </p>
