@@ -9,6 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@blocknote/core": "^0.57.0",
+    "@blocknote/mantine": "^0.57.0",
+    "@blocknote/react": "^0.57.0",
+    "@mantine/core": "^9.7.5",
+    "@mantine/hooks": "^9.7.5",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
     "katex": "^0.18.4",

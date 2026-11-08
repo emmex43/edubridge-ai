@@ -1,235 +1,260 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, BookOpen, FileText, CheckCircle2, Lock, ArrowRight } from 'lucide-react';
+import { useCourseStore } from '@/store/courseStore';
+import { Plus, FileText, Image as ImageIcon, Video, Lock, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
 
-const CATEGORIES = [
-  { id: 'tech', label: 'Tech & AI Skills', color: 'bg-emerald-500' },
-  { id: 'science', label: 'Sciences & Earth', color: 'bg-sky-500' },
-  { id: 'humanities', label: 'History & Society', color: 'bg-amber-400' },
-];
+const LessonEditor = dynamic(() => import('@/components/tutor/LessonEditor'), {
+  ssr: false,
+  loading: () => (
+    <div role="status" className="min-h-96 rounded-xl border border-border bg-surface p-4 text-sm text-muted">
+      Loading lesson editor…
+    </div>
+  ),
+});
 
-export default function TutorUploadPage() {
-  // --- Auth State ---
-  const [isAuthorized, setIsAuthorized] = useState(false);
+export default function TutorUpload() {
+  // Passcode Lock State
+  const [isUnlocked, setIsUnlocked] = useState(false);
   const [passcode, setPasscode] = useState('');
+  const [error, setError] = useState('');
 
-  // --- Form State ---
-  const [formData, setFormData] = useState({
-    title: '', gradeLevel: 'grade_6_8', category: 'tech', summary: '', notes: '',
-  });
-  const [coverImage, setCoverImage] = useState<File | null>(null);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
+  // Curriculum Builder State (Zustand)
+  const {
+    courseTitle, setCourseTitle,
+    modules, addModule, addLesson,
+    activeLessonId, setActiveLesson,
+    updateLessonTitle, updateLessonContent
+  } = useCourseStore();
 
-  // --- Handle Admin Unlock ---
+  const activeModule = modules.find(m => m.lessons.some(l => l.id === activeLessonId));
+  const activeLesson = activeModule?.lessons.find(l => l.id === activeLessonId);
+
+  // Handle Passcode Unlock
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    // In production, use an environment variable. For the pitch, this hardcoded check works perfectly.
-    if (passcode === 'admin2026' || passcode === process.env.NEXT_PUBLIC_TUTOR_PIN) {
-      setIsAuthorized(true);
+    // Replace 'admin123' with whatever your actual master passcode is
+    if (passcode === 'admin123') {
+      setIsUnlocked(true);
+      setError('');
     } else {
-      alert('Unauthorized. Invalid tutor passcode.');
-      setPasscode('');
+      setError('Incorrect passcode. Access denied.');
     }
   };
 
-  // --- Handle Module Upload ---
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    const payload = new FormData();
-    payload.append('title', formData.title);
-    payload.append('grade_level', formData.gradeLevel);
-    payload.append('category', formData.category);
-    payload.append('summary', formData.summary);
-    payload.append('notes_markdown', formData.notes);
-    if (coverImage) payload.append('cover_image', coverImage);
-    if (pdfFile) payload.append('attachment_pdf', pdfFile);
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/modules`, {
-        method: 'POST',
-        body: payload,
-      });
-      if (!res.ok) throw new Error('Upload failed');
-      setSuccess(true);
-    } catch (err) {
-      console.error(err);
-      alert('Error uploading module. Verify backend connection.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // ==========================================
-  // VIEW: UNATHORIZED (LOCK SCREEN)
-  // ==========================================
-  if (!isAuthorized) {
+  // --- RENDER 1: THE LOCK SCREEN ---
+  if (!isUnlocked) {
     return (
-      <div className="min-h-screen bg-[#FFFDF8] flex items-center justify-center p-6 text-[#1E293B]">
-        <div className="max-w-md w-full bg-white rounded-3xl p-8 border-4 border-[#1E293B] shadow-[6px_6px_0px_#1E293B] text-center">
-          <div className="w-20 h-20 bg-[#FB7185] rounded-full border-4 border-[#1E293B] flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_#1E293B]">
-            <Lock size={32} className="text-white" />
+      <main className="flex min-h-dvh flex-col items-center justify-center bg-background px-5 py-10 text-foreground">
+        <div className="w-full max-w-md rounded-3xl border border-border bg-surface p-6 text-center shadow-sm sm:p-8">
+          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+            <Lock aria-hidden="true" size={24} />
           </div>
-          <h1 className="text-2xl font-black text-[#1E293B] mb-2">Tutor Studio</h1>
-          <p className="text-slate-500 font-medium mb-8">Restricted access. Please enter the master admin passcode to publish modules.</p>
+          <h1 className="mb-2 text-2xl font-black">Tutor Studio</h1>
+          <p className="mb-8 text-sm leading-6 text-muted">
+            Restricted access. Please enter the master admin passcode to publish modules.
+          </p>
           
+          {error && (
+            <p role="alert" className="mb-4 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-left text-sm font-semibold text-red-800">
+              {error}
+            </p>
+          )}
+
           <form onSubmit={handleUnlock} className="space-y-4">
-            <input
-              type="password"
-              required
-              placeholder="Enter Passcode..."
-              value={passcode}
-              onChange={(e) => setPasscode(e.target.value)}
-              className="w-full px-4 py-4 rounded-xl border-2 border-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#14B8A6] text-center font-black tracking-widest"
-            />
+            <div className="text-left">
+              <label htmlFor="studio-passcode" className="mb-2 block text-sm font-bold">
+                Admin passcode
+              </label>
+              <input
+                id="studio-passcode"
+                name="passcode"
+                type="password"
+                autoComplete="current-password"
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
+                placeholder="Enter your passcode"
+                className="min-h-12 w-full rounded-xl border border-border bg-white px-4 py-3 font-medium transition-shadow focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+              />
+            </div>
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 py-4 rounded-full bg-[#1E293B] text-white font-black text-lg hover:bg-slate-800 transition-colors"
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-brand px-4 py-3 font-bold text-white transition-colors hover:bg-brand-hover"
             >
-              Unlock Studio <ArrowRight size={20} />
+              Unlock Studio <ArrowRight aria-hidden="true" size={18} />
             </button>
           </form>
+
+          <Link href="/dashboard" className="mt-6 inline-flex min-h-11 items-center text-sm font-bold text-brand hover:underline">
+            Return to dashboard
+          </Link>
         </div>
-      </div>
+      </main>
     );
   }
 
-  // ==========================================
-  // VIEW: AUTHORIZED (UPLOAD FORM)
-  // ==========================================
+  // --- RENDER 2: THE FULL CURRICULUM BUILDER (Only visible after unlocking) ---
   return (
-    <div className="min-h-screen bg-[#FFFDF8] py-12 px-4 sm:px-6 lg:px-8 text-[#1E293B]">
-      <div className="max-w-3xl mx-auto bg-white rounded-3xl p-8 border-4 border-[#1E293B] shadow-[6px_6px_0px_#1E293B]">
-        <div className="flex items-center justify-between mb-8 pb-6 border-b-2 border-[#1E293B]/10">
-          <div className="flex items-center space-x-3">
-            <div className="p-3 bg-[#14B8A6] rounded-2xl border-2 border-[#1E293B] text-white shadow-[2px_2px_0px_#1E293B]">
-              <BookOpen className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black text-[#1E293B]">Tutor Studio</h1>
-              <p className="text-sm font-bold text-slate-500">Publish modules for Grades 6–12</p>
-            </div>
+    <div className="flex min-h-dvh flex-col bg-background text-foreground md:h-dvh md:flex-row md:overflow-hidden">
+
+      {/* Left Sidebar - Curriculum Builder */}
+      <aside aria-label="Course outline" className="flex w-full flex-col border-b border-border bg-surface md:h-full md:w-80 md:shrink-0 md:border-b-0 md:border-r">
+        <header className="border-b border-border p-4 sm:p-5">
+          <Link href="/dashboard" className="inline-flex min-h-11 items-center text-sm font-semibold text-muted transition-colors hover:text-brand">
+            <span aria-hidden="true" className="mr-2">←</span> Back to dashboard
+          </Link>
+          <h1 className="mt-3 text-xl font-black tracking-tight">Tutor Studio</h1>
+          <div className="mt-4">
+            <label htmlFor="course-title" className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted">
+              Course title
+            </label>
+            <input
+              id="course-title"
+              type="text"
+              value={courseTitle}
+              onChange={(e) => setCourseTitle(e.target.value)}
+              className="min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2 font-semibold transition-shadow focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+              placeholder="Course title"
+            />
           </div>
-          <button onClick={() => setIsAuthorized(false)} className="text-sm font-bold text-slate-400 hover:text-[#FB7185]">
-            Lock & Exit
+        </header>
+
+        <div className="max-h-72 flex-1 space-y-5 overflow-y-auto p-4 md:max-h-none md:min-h-0">
+          {modules.map((module) => (
+            <section key={module.id} aria-labelledby={`module-${module.id}`} className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <h2 id={`module-${module.id}`} className="min-w-0 text-sm font-bold text-foreground">
+                  {module.title}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => addLesson(module.id)}
+                  aria-label={`Add lesson to ${module.title}`}
+                  title={`Add lesson to ${module.title}`}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-background hover:text-brand"
+                >
+                  <Plus aria-hidden="true" size={18} />
+                </button>
+              </div>
+
+              <div className="space-y-1 border-l border-border pl-3">
+                {module.lessons.map((lesson) => (
+                  <button
+                    key={lesson.id}
+                    type="button"
+                    onClick={() => setActiveLesson(lesson.id)}
+                    aria-pressed={activeLessonId === lesson.id}
+                    className={`flex min-h-11 w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors ${
+                      activeLessonId === lesson.id
+                        ? 'bg-brand text-white'
+                        : 'text-muted hover:bg-background hover:text-foreground'
+                    }`}
+                  >
+                    <FileText aria-hidden="true" size={16} className="shrink-0" />
+                    <span className="truncate">{lesson.title || 'Untitled Lesson'}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          ))}
+
+          <button
+            type="button"
+            onClick={addModule}
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border px-4 py-3 text-sm font-bold text-muted transition-colors hover:border-brand hover:bg-brand/5 hover:text-brand"
+          >
+            <Plus aria-hidden="true" size={16} /> Add module
           </button>
         </div>
 
-        {success ? (
-          <div className="p-8 bg-[#34D399]/20 border-4 border-[#34D399] rounded-3xl text-center space-y-4">
-            <CheckCircle2 className="w-16 h-16 text-[#059669] mx-auto" />
-            <h2 className="text-2xl font-black text-[#1E293B]">Module Published!</h2>
-            <p className="text-slate-600 font-medium">The lesson and vector embeddings are now live for students.</p>
-            <button
-              onClick={() => setSuccess(false)}
-              className="mt-6 px-8 py-3 rounded-full bg-[#1E293B] text-white font-black text-sm hover:bg-slate-800"
-            >
-              Upload Another
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-black text-[#1E293B] mb-2 uppercase tracking-wider">Module Title</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g., Plate Tectonics Basics"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border-2 border-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#14B8A6]"
-              />
-            </div>
+        <div className="border-t border-border p-4">
+          <button
+            type="button"
+            disabled
+            title="Course publishing is not available yet"
+            className="flex min-h-11 w-full cursor-not-allowed items-center justify-center rounded-full bg-brand px-4 py-3 text-sm font-bold text-white opacity-50"
+          >
+            Publishing coming soon
+          </button>
+        </div>
+      </aside>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Main Canvas - Notion Style Editor */}
+      <main className="relative flex min-h-[65dvh] flex-1 flex-col bg-background md:min-h-0 md:overflow-y-auto">
+        <div className="sticky top-0 z-10 flex min-h-14 items-center justify-between gap-4 border-b border-border bg-background/95 px-5 backdrop-blur-sm sm:px-8">
+          <span className="min-w-0 truncate text-sm font-semibold text-muted">{courseTitle}</span>
+          <span role="status" className="shrink-0 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-muted">
+            Draft · Not published
+          </span>
+        </div>
+
+        <div className="mx-auto w-full max-w-3xl flex-1 px-5 py-8 sm:px-8 sm:py-12 lg:px-12">
+          {activeLesson ? (
+            <div className="space-y-6">
               <div>
-                <label className="block text-sm font-black text-[#1E293B] mb-2 uppercase tracking-wider">Target Grade</label>
-                <select
-                  value={formData.gradeLevel}
-                  onChange={(e) => setFormData({ ...formData, gradeLevel: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-[#1E293B] bg-white font-medium"
-                >
-                  <option value="grade_6_8">Grades 6–8 (JSS 1–3)</option>
-                  <option value="grade_9_12">Grades 9–12 (SSS 1–3)</option>
-                </select>
+                <label htmlFor="lesson-title" className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted">
+                  Lesson title
+                </label>
+                <input
+                  id="lesson-title"
+                  type="text"
+                  value={activeLesson.title}
+                  onChange={(e) => updateLessonTitle(activeLesson.id, e.target.value)}
+                  placeholder="Lesson title"
+                  className="min-h-14 w-full rounded-xl border border-transparent bg-transparent px-3 py-2 text-3xl font-black leading-tight transition-colors placeholder:text-slate-400 hover:border-border focus:border-brand focus:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/20 sm:text-4xl"
+                />
               </div>
+
+              <div className="flex flex-wrap items-center gap-2 border-b border-border pb-5">
+                <button
+                  type="button"
+                  disabled
+                  title="Adding a cover image is not available yet"
+                  className="inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-muted opacity-60"
+                >
+                  <ImageIcon aria-hidden="true" size={16} /> Cover · Coming soon
+                </button>
+                <button
+                  type="button"
+                  disabled
+                  title="Adding a video is not available yet"
+                  className="inline-flex min-h-11 cursor-not-allowed items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-muted opacity-60"
+                >
+                  <Video aria-hidden="true" size={16} /> Video · Coming soon
+                </button>
+              </div>
+
               <div>
-                <label className="block text-sm font-black text-[#1E293B] mb-2 uppercase tracking-wider">Track</label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-[#1E293B] bg-white font-medium"
+                <h2 id="lesson-content-label" className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">
+                  Lesson content
+                </h2>
+                <div
+                  aria-labelledby="lesson-content-label"
+                  className="min-h-96 rounded-xl border border-border bg-surface px-2 py-3 sm:px-4"
                 >
-                  {CATEGORIES.map((c) => (
-                    <option key={c.id} value={c.id}>{c.label}</option>
-                  ))}
-                </select>
+                  <LessonEditor
+                    key={activeLesson.id}
+                    content={activeLesson.content}
+                    onChange={(content) =>
+                      updateLessonContent(activeLesson.id, content)
+                    }
+                  />
+                </div>
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-black text-[#1E293B] mb-2 uppercase tracking-wider">Short Summary</label>
-              <textarea
-                rows={2}
-                required
-                placeholder="Brief 1-2 sentence overview..."
-                value={formData.summary}
-                onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border-2 border-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#14B8A6]"
-              />
+          ) : (
+            <div role="status" className="flex min-h-64 flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-surface px-6 py-10 text-center">
+              <FileText aria-hidden="true" size={28} className="mb-3 text-muted" />
+              <p className="font-semibold text-foreground">No lesson selected</p>
+              <p className="mt-1 max-w-sm text-sm leading-6 text-muted">
+                Select a lesson from the course outline, or add one to a module to begin.
+              </p>
             </div>
-
-            <div>
-              <label className="block text-sm font-black text-[#1E293B] mb-2 uppercase tracking-wider">Lesson Notes (Markdown)</label>
-              <textarea
-                rows={6}
-                placeholder="Write or paste your short lecture notes here..."
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full px-4 py-3 font-mono text-sm rounded-xl border-2 border-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#14B8A6]"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="border-2 border-dashed border-[#1E293B] p-6 rounded-2xl text-center bg-white hover:bg-slate-50 transition-colors cursor-pointer relative">
-                <Upload className="w-8 h-8 mx-auto text-[#14B8A6] mb-3" />
-                <span className="block text-sm font-black text-[#1E293B]">Cover Image</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setCoverImage(e.target.files?.[0] || null)}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-                {coverImage && <span className="block mt-2 text-xs text-[#14B8A6] font-bold">{coverImage.name}</span>}
-              </div>
-
-              <div className="border-2 border-dashed border-[#1E293B] p-6 rounded-2xl text-center bg-white hover:bg-slate-50 transition-colors cursor-pointer relative">
-                <FileText className="w-8 h-8 mx-auto text-[#FBBF24] mb-3" />
-                <span className="block text-sm font-black text-[#1E293B]">PDF Attachment</span>
-                <input
-                  type="file"
-                  accept=".pdf"
-                  onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-                {pdfFile && <span className="block mt-2 text-xs text-[#FBBF24] font-bold">{pdfFile.name}</span>}
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-4 mt-4 rounded-full bg-[#14B8A6] hover:bg-[#0D9488] text-white font-black text-lg border-2 border-[#1E293B] shadow-[4px_4px_0px_#1E293B] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
-            >
-              {isSubmitting ? 'Publishing...' : 'Publish Module to Students'}
-            </button>
-          </form>
-        )}
-      </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
